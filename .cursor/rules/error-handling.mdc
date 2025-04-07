@@ -1,0 +1,12 @@
+---
+description: Guidelines for handling errors using objects instead of exceptions
+globs: 
+alwaysApply: true
+---
+# Error Handling
+
+- Use errors as objects pattern instead of throwing exceptions
+- Create domain-specific error types
+- Functions that may produce errors should return a Result type (Either pattern)
+  - Example: `{ success: true, data: result }` or `{ success: false, error: errorObject }`
+- Avoid swallowing errors silently

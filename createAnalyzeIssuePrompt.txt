@@ -1,0 +1,133 @@
+/**
+ * Create a prompt for analyzing a Jira issue
+ *
+ * This function generates a prompt that can be used to analyze a Jira issue
+ * and its comments. It includes instructions for the AI to analyze the issue
+ * and provide a detailed report.
+ */
+
+/* eslint-disable custom-rules/file-length */
+import { log } from '../../utils/logger'
+import { prepareIssueMetadata } from './prepareIssueMetadata'
+import { formatChangeLog } from './utils/formatChangeLog'
+import { formatComment } from './utils/formatComment'
+import type { IssueComment } from '../../jira/types/comment'
+import type { JiraIssue } from '../../jira/types/issue.types'
+
+export function createAnalyzeIssuePrompt(issue: JiraIssue, comments: IssueComment[]): string {
+	const metadata = prepareIssueMetadata(issue)
+	const formattedComments = comments.map(formatComment).join('\n\n')
+	const formattedChangelog = formatChangeLog(issue)
+
+	const prompt = `
+You are a Jira issue analysis expert with extensive experience in agile software development and project management. 
+Please analyze the following Jira issue and provide a detailed assessment.
+
+## ISSUE METADATA
+Key: ${issue.key}
+Summary: ${metadata.summary}
+Type: ${metadata.issueTypeName} (ID: ${metadata.issueTypeId})
+Project ID: ${metadata.projectId}
+Status: ${metadata.statusName} (ID: ${metadata.statusId})
+Priority: ${metadata.priorityName} (ID: ${metadata.priorityId})
+Priority Score: ${metadata.priorityScore}
+
+Parent Issue: ${metadata.parentKey ? `${metadata.parentKey} (ID: ${metadata.parentId})` : 'None'}
+Team: ${metadata.teamName} (ID: ${metadata.teamId})
+
+## PEOPLE
+Assignee: ${metadata.assigneeName} (ID: ${metadata.assigneeId})
+Creator: ${metadata.creatorName} (ID: ${metadata.creatorId})
+Reporter: ${metadata.reporterId}
+
+## TIMING
+Created: ${metadata.created}
+Updated: ${metadata.updated}
+Resolution Date: ${metadata.resolutionDateString}
+
+## SIZING & CATEGORIZATION
+Story Points: ${metadata.storyPoints}
+Investment Type: ${metadata.investmentTypeName} (ID: ${metadata.investmentTypeId})
+Bug Origin: ${metadata.bugOriginName} (ID: ${metadata.bugOriginId})
+Product: ${metadata.productNameId}
+Product Category: ${metadata.productCategory}
+Third Party Issue: ${metadata.thirdPartyIssue}
+Timing Values: ${metadata.timingValues}
+
+## RESOLUTION
+Resolution: ${metadata.resolutionName} (ID: ${metadata.resolutionId})
+
+## DESCRIPTION
+${metadata.description}
+
+## CHANGELOG
+${formattedChangelog}
+
+## COMMENTS (${comments.length})
+${formattedComments}
+
+## ANALYSIS INSTRUCTIONS
+Please provide a comprehensive analysis of this issue organized into the following sections:
+
+### 1. COMPLETENESS EVALUATION
+Assess the completeness and quality of the issue description, acceptance criteria, and documentation.
+- Is the issue well-documented and aligned with the team's Definition of Ready?
+- Are acceptance criteria clearly written, testable, and actionable?
+- Is sufficient context and background provided for immediate implementation without excessive clarification?
+- Does the issue clearly define conditions for being considered "Done" in line with the team's Definition of Done?
+
+### 2. COMPLEXITY ANALYSIS
+Evaluate the technical complexity and implementation challenges.
+- Is the story point estimation realistic based on known complexity and historical velocity?
+- Are technical uncertainties explicitly identified and discussed (Spike or research tasks)?
+- Are there architectural or design considerations that could affect future sprint work or increase technical debt?
+- Is the chosen solution aligned with team practices for simplicity, maintainability, and continuous integration?
+
+### 3. CONTINUITY ANALYSIS
+Analyze the workflow and communication patterns throughout the issue lifecycle.
+- Was feedback gathered, clearly documented, and promptly acted upon?
+- Did the issue maintain steady and visible progress throughout the sprint(s)?
+- Were there communication gaps, unnecessary status regressions, or significant delays in responding to comments?
+- Does the team demonstrate transparency in updating issue statuses to reflect actual work state (daily stand-ups, etc.)?
+- Are daily Scrum updates and sprint retrospective insights reflected in the issue’s progression?
+
+### 4. DEPENDENCIES ANALYSIS
+Identify and evaluate any dependencies.
+- Are internal or external dependencies clearly identified, documented, and tracked?
+- Were dependencies proactively managed, with clear accountability and timelines?
+- Did unplanned dependencies emerge during the sprint and how were they handled?
+- Are stakeholders and dependent teams actively informed and collaboratively involved throughout the issue lifecycle?
+
+### 5. DURATION ASSESSMENT
+Analyze the time aspects of this issue.
+- Was the cycle time from creation to resolution reasonable and aligned with sprint commitments?
+- Were there significant deviations or delays, and if so, were these addressed transparently in sprint reviews or retrospectives?
+- Was this issue carried over multiple sprints, indicating poor sprint planning, estimation, or unforeseen complexity?
+- Is the issue duration consistent with team’s average cycle time and agreed-upon team norms?
+
+### 6. METADATA ASSESSMENT
+Evaluate the accuracy and completeness of issue metadata.
+- Is the selected issue type appropriate (Story, Task, Bug, Spike, etc.) according to team guidelines?
+- Is the priority assigned in alignment with the issue’s real business value and urgency as per backlog prioritization?
+- Are all relevant Jira fields completed accurately, supporting team reporting and transparency needs?
+- Are issue relationships (parent-child, blocks/is blocked by, Epic linking) properly established to support effective backlog management and sprint planning?
+
+### 7. RISK IDENTIFICATION
+Identify any risks or issues in how this task was handled.
+- Were risks actively identified and managed throughout the sprint (e.g., daily Scrum, backlog refinement)?
+- Was there explicit communication or documentation around risk mitigation strategies?
+- Are there lingering quality or technical debt concerns that may lead to future rework or reopening of this issue?
+- Could incomplete implementation or insufficient testing increase the risk of regression or customer dissatisfaction?
+
+### 8. RECOMMENDATIONS
+Provide actionable recommendations for improvement.
+- Suggest specific improvements to team processes (backlog refinement, sprint planning, definition of done, etc.) that could prevent similar issues.
+- How could documentation or issue templates be enhanced for greater clarity, completeness, and consistency?
+- What agile practices or team agreements should be reinforced to address the observed issues (e.g., better use of sprint reviews, retrospectives, or daily stand-ups)?
+- Recommend actions to improve visibility, transparency, and collaboration within the team and across dependent teams or stakeholders.
+
+Provide your analysis in a structured format with clear sections and actionable insights.
+`
+	log(`DEBUG: createAnalyzeIssuePrompt prompt: ${prompt}`)
+	return prompt
+}

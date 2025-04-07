@@ -1,0 +1,23 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Code Structure
+
+- [MUST] No default exports, only named exports
+- Organize by features/domains as top-level folders
+- Write tests in adjacent __tests__ folders.
+- Use consistent folder structure within features
+- Group related files in a single directory
+- Limit file size to maintain readability (max ~80 lines)
+- One component/module per file
+- Separate business logic from side effects like API calls or UI rendering
+- Keep configuration separate from implementation
+- Avoid circular dependencies
+- Minimize the visibility scope of functions and variables
+- Consider organizing files by their role in the application (services, utils, controllers, etc.)
+- Keep directory nesting to a minimum (max 3-4 levels deep)
+- Types should be relegated to "types" subfolders located in adjacent folders to their production code
+- Follow the naming pattern `*.type.ts` for type files
+- Interface names should not start with "I" prefix

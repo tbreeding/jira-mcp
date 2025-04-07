@@ -1,0 +1,25 @@
+---
+alwaysApply: true
+title: General Principles
+type: rule
+enabled: true
+globs: 
+scope: all
+description: General coding principles to follow across the codebase
+---
+
+# General Principles
+
+- Follow clean coding principles
+- Prefer functional programming patterns
+- Use errors as objects pattern, avoid throwing exceptions unless absolutely necessary
+- Follow Single Responsibility Principle - each function should do one thing well
+- Follow Single Level of Abstraction Principle - operations within a function should be at the same level of abstraction
+- Abstract compound conditions into separate, well-named functions
+- Use pure functions whenever possible - no side effects, same output for same input
+- Maintain immutability - avoid modifying data; create new copies instead
+- Prefer early returns over nested conditionals
+- Keep functions small and focused (under 15-20 lines)
+- Use meaningful naming - functions should be verbs, variables should be nouns
+- Avoid abbreviations - full names improve readability
+- No magic numbers/strings - use named constants 

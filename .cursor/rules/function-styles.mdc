@@ -1,0 +1,8 @@
+---
+description: Guidelines for function declarations and usage
+globs: 
+alwaysApply: true
+---
+# Function Styles
+
+- Prefer standard functions over arrow functions

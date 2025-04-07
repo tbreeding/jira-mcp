@@ -1,0 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Testing and Code Quality
+
+- Please write all tests in separate, but immediately adject to the file, folders named __tests__
+- Test to 100% coverage
+- Mock external dependencies in unit tests
+- Maintain test independence - tests should not depend on other tests
+- Avoid testing implementation details
+- Test behavior and outcomes, not internal structure
+- To avoid unnecessarily long fixture with information irrelavant to the test, use casting "as unknown as ..."
