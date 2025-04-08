@@ -7,6 +7,10 @@
 	"files": [
 		"build"
 	],
+	"repository": {
+		"type": "git",
+		"url": "git@github.com:tbreeding/jira-mcp.git"
+	},
 	"engines": {
 		"node": "^22.13.1",
 		"npm": "^10.9.2"
