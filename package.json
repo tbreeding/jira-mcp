@@ -1,7 +1,7 @@
 {
-	"name": "jira-mcp-server",
-	"version": "1.0.0",
-	"author": "",
+	"name": "@tbreeding/jira-mcp-server",
+	"version": "0.0.1",
+	"author": "Tim Breeding",
 	"description": "Jira MCP Server",
 	"private": false,
 	"files": [
