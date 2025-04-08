@@ -12,7 +12,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * Update the state of the issue creation wizard
  */
 export const updateStateWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_updateState',
+	name: 'issueCreation_updateState',
 	description:
 		'Update the core state of the issue creation wizard. Use this to set the `projectKey`, `issueTypeId`, `fields`, or advance the `step` in the process.',
 	inputSchema: {

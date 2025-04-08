@@ -39,19 +39,19 @@ This application exposes the following tools via the Model Context Protocol:
 
 These tools provide a step-by-step, guided process for creating new Jira issues. The wizard maintains state throughout the creation flow, typically involving these stages: initiating the process, selecting a project (`getProjects`), choosing an issue type (`getIssueTypes`), retrieving and populating the necessary fields (`getFields`, `updateFields`), optionally analyzing the issue details, and finally confirming and creating the issue (`createIssue`). Use `getState` and `getStatus` to monitor progress, and `resetState` to start over.
 
-- `mcp_IssueCreationWizard_getState`: Gets the current internal state of the wizard.
-- `mcp_IssueCreationWizard_getStatus`: Gets the high-level status of the wizard.
-- `mcp_IssueCreationWizard_initiateState`: Initializes a new wizard state.
-- `mcp_IssueCreationWizard_resetState`: Resets the wizard state.
-- `mcp_IssueCreationWizard_updateState`: Updates the wizard state (project, issue type, fields, step).
-- `mcp_IssueCreationWizard_createIssue`: Creates a Jira issue using the wizard's state.
-- `mcp_IssueCreationWizard_getProjects`: Retrieves available Jira projects.
-- `mcp_IssueCreationWizard_getIssueTypes`: Gets available issue types for the selected project.
-- `mcp_IssueCreationWizard_getFields`: Retrieves fields required for the selected project/issue type.
-- `mcp_IssueCreationWizard_updateFields`: Updates specific field values in the wizard state.
-- `mcp_IssueCreationWizard_setAnalysisComplete`: Sets the analysis complete flag.
-- `mcp_IssueCreationWizard_setUserConfirmation`: Sets the user confirmation flag before creation.
-- `mcp_IssueCreationWizard_analyzeIssue`: Analyzes the issue details within the wizard context.
+- `issueCreation_getState`: Gets the current internal state of the wizard.
+- `issueCreation_getStatus`: Gets the high-level status of the wizard.
+- `issueCreation_initiateState`: Initializes a new wizard state.
+- `issueCreation_resetState`: Resets the wizard state.
+- `issueCreation_updateState`: Updates the wizard state (project, issue type, fields, step).
+- `issueCreation_createIssue`: Creates a Jira issue using the wizard's state.
+- `issueCreation_getProjects`: Retrieves available Jira projects.
+- `issueCreation_getIssueTypes`: Gets available issue types for the selected project.
+- `issueCreation_getFields`: Retrieves fields required for the selected project/issue type.
+- `issueCreation_updateFields`: Updates specific field values in the wizard state.
+- `issueCreation_setAnalysisComplete`: Sets the analysis complete flag.
+- `issueCreation_setUserConfirmation`: Sets the user confirmation flag before creation.
+- `issueCreation_analyzeIssue`: Analyzes the issue details within the wizard context.
 
 ## Development
 

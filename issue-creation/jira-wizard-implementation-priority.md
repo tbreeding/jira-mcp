@@ -207,10 +207,10 @@ This document outlines the prioritized implementation steps for the Jira Issue C
 
 To support the conversational experience, the following new tools should be implemented:
 
-1. `mcp_IssueCreationWizard_checkProgress` - Get the current wizard progress in narrative form
-2. `mcp_IssueCreationWizard_goBack` - Return to previous step in the wizard
-3. `mcp_IssueCreationWizard_savePoint` - Create a named save point for the current state
-4. `mcp_IssueCreationWizard_getHelp` - Get contextual help for the current wizard state
+1. `issueCreation_checkProgress` - Get the current wizard progress in narrative form
+2. `issueCreation_goBack` - Return to previous step in the wizard
+3. `issueCreation_savePoint` - Create a named save point for the current state
+4. `issueCreation_getHelp` - Get contextual help for the current wizard state
 
 ## Testing Strategy
 

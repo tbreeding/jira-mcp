@@ -19,7 +19,7 @@ export function initiateStateWizardToolExecutor(stateManager: StateManager): Too
 			// Check if a wizard is already active
 			if (stateManager.isActive()) {
 				return createErrorResult(
-					'A wizard session is already active. Please call mcp_IssueCreationWizard_resetState first if you want to start a new session.',
+					'A wizard session is already active. Please call issueCreation_resetState first if you want to start a new session.',
 				)
 			}
 

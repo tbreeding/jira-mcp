@@ -8,11 +8,11 @@ This document presents a realistic mock conversation between a user and an AI Ag
 
 **AI Agent**: I can help you create a new Jira issue. I'll guide you through the process step by step. Let me start the issue creation wizard.
 
-*[AI uses mcp_IssueCreationWizard_initiateState]*
+*[AI uses issueCreation_initiateState]*
 
 **AI Agent**: I've started the issue creation process. First, let's select which project this bug should be created in. Here are the available projects:
 
-*[AI uses mcp_IssueCreationWizard_getProjects]*
+*[AI uses issueCreation_getProjects]*
 
 **AI Agent**: Here are the projects you have access to:
 - **BACKEND** - Backend Services
@@ -27,11 +27,11 @@ Which project should this bug be filed under?
 
 **AI Agent**: Thanks, I'll select the FRONTEND project for this issue.
 
-*[AI uses mcp_IssueCreationWizard_updateState to set project=FRONTEND]*
+*[AI uses issueCreation_updateState to set project=FRONTEND]*
 
 **AI Agent**: Now let's determine what type of issue to create. For the FRONTEND project, these issue types are available:
 
-*[AI uses mcp_IssueCreationWizard_getIssueTypes]*
+*[AI uses issueCreation_getIssueTypes]*
 
 **AI Agent**: Here are the available issue types for FRONTEND:
 - **Bug** - A problem that impairs product functionality
@@ -46,11 +46,11 @@ You mentioned this is a bug report, so shall I select the Bug issue type?
 
 **AI Agent**: I've selected Bug as the issue type.
 
-*[AI uses mcp_IssueCreationWizard_updateState to set issueType=10004 (Bug)]*
+*[AI uses issueCreation_updateState to set issueType=10004 (Bug)]*
 
 **AI Agent**: Now I need to collect the required information for this bug report. Let me check what fields are needed.
 
-*[AI uses mcp_IssueCreationWizard_getFields]*
+*[AI uses issueCreation_getFields]*
 
 **AI Agent**: For a Bug in the FRONTEND project, I need the following information:
 - **Summary** (required): A brief, descriptive title for the bug
@@ -82,7 +82,7 @@ Let's start with the summary. What would you like to call this bug?
 
 **AI Agent**: Thank you. I'll update the issue with all this information.
 
-*[AI uses mcp_IssueCreationWizard_updateFields to set the field values]*
+*[AI uses issueCreation_updateFields to set the field values]*
 
 **AI Agent**: Here's a summary of the bug report I'm about to create:
 
@@ -100,9 +100,9 @@ Does this look correct, or would you like to make any changes before I create th
 
 **AI Agent**: I'll update the description to include that information.
 
-*[AI uses mcp_IssueCreationWizard_getState to check current state]*
+*[AI uses issueCreation_getState to check current state]*
 
-*[AI uses mcp_IssueCreationWizard_updateFields to update the description field]*
+*[AI uses issueCreation_updateFields to update the description field]*
 
 **AI Agent**: I've updated the description to include that the issue only occurs in Chrome and works fine in Firefox. Here's the final version I'll submit:
 
@@ -118,7 +118,7 @@ Shall I go ahead and create this issue now?
 
 **User**: Yes, please create it.
 
-*[AI uses mcp_IssueCreationWizard_createIssue]*
+*[AI uses issueCreation_createIssue]*
 
 **AI Agent**: Great! I've successfully created the bug report in Jira. 
 
@@ -143,7 +143,7 @@ Would you like me to run this query for you now?
 
 **AI Agent**: You're welcome! Let me know if you need any other assistance with Jira issues in the future.
 
-*[AI uses mcp_IssueCreationWizard_resetState to clean up]*
+*[AI uses issueCreation_resetState to clean up]*
 
 ## Key Aspects Demonstrated
 

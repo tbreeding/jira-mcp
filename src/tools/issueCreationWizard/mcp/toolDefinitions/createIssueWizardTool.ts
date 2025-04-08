@@ -11,7 +11,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * Create a Jira issue using the current wizard state
  */
 export const createIssueWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_createIssue',
+	name: 'issueCreation_createIssue',
 	description: `Finalizes the wizard process by creating a Jira issue using the currently configured state (project, issue type, fields). 
 	
 	1. Don't execute without consulting the user first.

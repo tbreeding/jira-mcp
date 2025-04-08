@@ -11,7 +11,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * Get available Jira projects for selection
  */
 export const getProjectsWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_getProjects',
+	name: 'issueCreation_getProjects',
 	description:
 		'Retrieve available Jira projects to start the issue creation process. This is often the first step. The wizard will guide the user to select a project.',
 	inputSchema: {

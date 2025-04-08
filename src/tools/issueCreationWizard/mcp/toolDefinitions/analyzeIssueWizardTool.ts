@@ -11,7 +11,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * Analyze the issue being created in the wizard
  */
 export const analyzeIssueWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_analyzeIssue',
+	name: 'issueCreation_analyzeIssue',
 	description:
 		'Analyzes the issue being created in the wizard and provides specific insights, best practices, and improvement suggestions.',
 	inputSchema: {

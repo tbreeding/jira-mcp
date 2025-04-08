@@ -13,7 +13,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * This is primarily for testing state persistence between tool calls
  */
 export const initiateStateWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_initiateState',
+	name: 'issueCreation_initiateState',
 	description: `Initialize a new, empty state for the issue creation wizard. Useful for testing state persistence across multiple tool calls.
 		
 		1. Initiate State

@@ -8,7 +8,7 @@ import { setAnalysisCompleteWizardTool } from '../../toolDefinitions/setAnalysis
 
 describe('setAnalysisCompleteWizardTool', () => {
 	it('should have the correct name', () => {
-		expect(setAnalysisCompleteWizardTool.name).toBe('mcp_IssueCreationWizard_setAnalysisComplete')
+		expect(setAnalysisCompleteWizardTool.name).toBe('issueCreation_setAnalysisComplete')
 	})
 
 	it('should have a description', () => {

@@ -613,7 +613,7 @@ import { formatStateForInspector } from '../logging/debugHelpers';
 export function getWizardStateToolExecutor(): ToolExecutor {
   return async function(parameters: Record<string, unknown>): Promise<ToolResult> {
     logger.info('Executing getState tool', {
-      operation: 'mcp_IssueCreationWizard_getState',
+      operation: 'issueCreation_getState',
       stateSnapshot: { parameters }
     });
     
@@ -626,7 +626,7 @@ export function getWizardStateToolExecutor(): ToolExecutor {
       // Log success
       const duration = Date.now() - startTime;
       logger.debug('getState tool completed', {
-        operation: 'mcp_IssueCreationWizard_getState',
+        operation: 'issueCreation_getState',
         duration,
         stateSnapshot: { state }
       });
@@ -646,7 +646,7 @@ export function getWizardStateToolExecutor(): ToolExecutor {
     } catch (error) {
       // Log error
       logger.error('getState tool failed', {
-        operation: 'mcp_IssueCreationWizard_getState',
+        operation: 'issueCreation_getState',
         errorContext: {
           message: error.message,
           stack: error.stack
@@ -681,7 +681,7 @@ import { getStateHistory, formatStateForInspector } from '../logging/debugHelper
 export function debugWizardStateToolExecutor(): ToolExecutor {
   return async function(parameters: Record<string, unknown>): Promise<ToolResult> {
     logger.info('Executing debugWizardState tool', {
-      operation: 'mcp_IssueCreationWizard_debugState',
+      operation: 'issueCreation_debugState',
       stateSnapshot: { parameters }
     });
     
@@ -730,7 +730,7 @@ export function debugWizardStateToolExecutor(): ToolExecutor {
     } catch (error) {
       // Log error
       logger.error('debugWizardState tool failed', {
-        operation: 'mcp_IssueCreationWizard_debugState',
+        operation: 'issueCreation_debugState',
         errorContext: {
           message: error.message,
           stack: error.stack

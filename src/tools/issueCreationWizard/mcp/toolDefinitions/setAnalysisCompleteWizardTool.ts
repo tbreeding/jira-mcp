@@ -10,7 +10,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * Tool definition for setting the analysis complete flag
  */
 export const setAnalysisCompleteWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_setAnalysisComplete',
+	name: 'issueCreation_setAnalysisComplete',
 	description: 'Sets the analysis complete flag for the current issue creation session',
 	inputSchema: {
 		type: 'object',

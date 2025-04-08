@@ -114,7 +114,7 @@ describe('initiateStateWizardToolExecutor', () => {
 
 		// Verify the error result
 		expect(mockCreateErrorResult).toHaveBeenCalledWith(
-			'A wizard session is already active. Please call mcp_IssueCreationWizard_resetState first if you want to start a new session.',
+			'A wizard session is already active. Please call issueCreation_resetState first if you want to start a new session.',
 		)
 		expect(result).toEqual(
 			expect.objectContaining({

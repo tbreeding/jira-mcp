@@ -8,7 +8,7 @@ import { setUserConfirmationWizardTool } from '../../toolDefinitions/setUserConf
 
 describe('setUserConfirmationWizardTool', () => {
 	it('should have the correct name', () => {
-		expect(setUserConfirmationWizardTool.name).toBe('mcp_IssueCreationWizard_setUserConfirmation')
+		expect(setUserConfirmationWizardTool.name).toBe('issueCreation_setUserConfirmation')
 	})
 
 	it('should have a description', () => {

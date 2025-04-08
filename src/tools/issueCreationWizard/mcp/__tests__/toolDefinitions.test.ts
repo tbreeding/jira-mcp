@@ -30,7 +30,7 @@ interface SchemaDefinition {
 describe('Issue Creation Wizard Tool Definitions', () => {
 	describe('getStateWizardTool', () => {
 		test('should have the correct name', () => {
-			expect(getStateWizardTool.name).toBe('mcp_IssueCreationWizard_getState')
+			expect(getStateWizardTool.name).toBe('issueCreation_getState')
 		})
 
 		test('should have a description', () => {
@@ -45,7 +45,7 @@ describe('Issue Creation Wizard Tool Definitions', () => {
 
 	describe('getStatusWizardTool', () => {
 		test('should have the correct name', () => {
-			expect(getStatusWizardTool.name).toBe('mcp_IssueCreationWizard_getStatus')
+			expect(getStatusWizardTool.name).toBe('issueCreation_getStatus')
 		})
 
 		test('should have a description', () => {
@@ -60,7 +60,7 @@ describe('Issue Creation Wizard Tool Definitions', () => {
 
 	describe('resetStateWizardTool', () => {
 		test('should have the correct name', () => {
-			expect(resetStateWizardTool.name).toBe('mcp_IssueCreationWizard_resetState')
+			expect(resetStateWizardTool.name).toBe('issueCreation_resetState')
 		})
 
 		test('should have a description', () => {
@@ -75,7 +75,7 @@ describe('Issue Creation Wizard Tool Definitions', () => {
 
 	describe('updateStateWizardTool', () => {
 		test('should have the correct name', () => {
-			expect(updateStateWizardTool.name).toBe('mcp_IssueCreationWizard_updateState')
+			expect(updateStateWizardTool.name).toBe('issueCreation_updateState')
 		})
 
 		test('should have a description', () => {
@@ -120,7 +120,7 @@ describe('Issue Creation Wizard Tool Definitions', () => {
 
 	describe('createIssueWizardTool', () => {
 		test('should have the correct name', () => {
-			expect(createIssueWizardTool.name).toBe('mcp_IssueCreationWizard_createIssue')
+			expect(createIssueWizardTool.name).toBe('issueCreation_createIssue')
 		})
 
 		test('should have a description', () => {
@@ -135,7 +135,7 @@ describe('Issue Creation Wizard Tool Definitions', () => {
 
 	describe('getProjectsWizardTool', () => {
 		test('should have the correct name', () => {
-			expect(getProjectsWizardTool.name).toBe('mcp_IssueCreationWizard_getProjects')
+			expect(getProjectsWizardTool.name).toBe('issueCreation_getProjects')
 		})
 
 		test('should have a description', () => {

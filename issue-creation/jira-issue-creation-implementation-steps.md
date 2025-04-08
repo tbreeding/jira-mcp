@@ -18,11 +18,11 @@ This document outlines a comprehensive, iterative approach to implementing the J
 ### 1.2. MCP Tool Definitions ✅ COMPLETED
 - **1.2.1.** Create basic tool definition structure following MCP conventions
 - **1.2.2.** Define tool schemas for:
-  - `mcp_IssueCreationWizard_getState`
-  - `mcp_IssueCreationWizard_getStatus`
-  - `mcp_IssueCreationWizard_resetState`
-  - `mcp_IssueCreationWizard_updateState`
-  - `mcp_IssueCreationWizard_createIssue`
+  - `issueCreation_getState`
+  - `issueCreation_getStatus`
+  - `issueCreation_resetState`
+  - `issueCreation_updateState`
+  - `issueCreation_createIssue`
 - **1.2.3.** Implement parameter validation
 - **1.2.4.** Create stub implementations that return mock data
 - **1.2.5.** Write tests for tool definition validation

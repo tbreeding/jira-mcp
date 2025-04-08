@@ -268,7 +268,7 @@ import { setAnalysisCompleteExecutor } from './setAnalysisCompleteExecutor'
 import { setUserConfirmationExecutor } from './setUserConfirmationExecutor'
 
 // Add these to the existing tool registrations:
-mcp.registerTool('mcp_IssueCreationWizard_setAnalysisComplete', setAnalysisCompleteExecutor(stateManager), {
+mcp.registerTool('issueCreation_setAnalysisComplete', setAnalysisCompleteExecutor(stateManager), {
 	description: 'Sets the analysis complete flag for the current issue creation session',
 	parameters: [
 		{
@@ -280,7 +280,7 @@ mcp.registerTool('mcp_IssueCreationWizard_setAnalysisComplete', setAnalysisCompl
 	],
 })
 
-mcp.registerTool('mcp_IssueCreationWizard_setUserConfirmation', setUserConfirmationExecutor(stateManager), {
+mcp.registerTool('issueCreation_setUserConfirmation', setUserConfirmationExecutor(stateManager), {
 	description: 'Sets the user confirmation flag for the current issue creation session',
 	parameters: [
 		{
@@ -439,7 +439,7 @@ AI: "I'll now analyze the issue to ensure it's properly configured."
 
 // Call analysis tool
 // After successful analysis:
-AI calls: mcp_IssueCreationWizard_setAnalysisComplete({ isComplete: true })
+AI calls: issueCreation_setAnalysisComplete({ isComplete: true })
 
 // Then ask for confirmation
 AI: "I've prepared the issue with the following details:
@@ -450,11 +450,11 @@ Description: {description}
 Would you like me to create this issue now?"
 
 // If user says yes:
-AI calls: mcp_IssueCreationWizard_setUserConfirmation({ confirmed: true })
-AI calls: mcp_IssueCreationWizard_createIssue()
+AI calls: issueCreation_setUserConfirmation({ confirmed: true })
+AI calls: issueCreation_createIssue()
 
 // If user says no:
-AI calls: mcp_IssueCreationWizard_setUserConfirmation({ confirmed: false })
+AI calls: issueCreation_setUserConfirmation({ confirmed: false })
 AI: "I understand. The issue won't be created. Let me know if you'd like to make any changes."
 ```
 

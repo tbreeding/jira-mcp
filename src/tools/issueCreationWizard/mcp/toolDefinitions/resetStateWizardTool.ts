@@ -11,7 +11,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * Reset the state of the issue creation wizard
  */
 export const resetStateWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_resetState',
+	name: 'issueCreation_resetState',
 	description:
 		'Resets the issue creation wizard state completely, clearing any selected project, issue type, or field values. Stops any ongoing wizard process.',
 	inputSchema: {

@@ -11,7 +11,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * Tool for updating field values in the wizard state
  */
 export const updateFieldsWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_updateFields',
+	name: 'issueCreation_updateFields',
 	description:
 		'Update specific field values in the wizard state after retrieving the necessary fields with `getFields`. Use `validateOnly` to check fields without saving.',
 	inputSchema: {

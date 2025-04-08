@@ -12,7 +12,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * Define the tool for retrieving field metadata
  */
 export const getFieldsWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_getFields',
+	name: 'issueCreation_getFields',
 	description: `Retrieve the available fields required for the currently selected project and issue type. 
 	
 	1. Call this after selecting a project and issue type to know what information is needed.

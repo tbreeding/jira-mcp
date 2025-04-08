@@ -114,19 +114,19 @@ enum WizardStep {
 Following the Model Context Protocol (MCP) architecture, we'll implement state management using tools rather than HTTP endpoints:
 
 1. **Get Wizard State Tool**
-   - Name: `mcp_IssueCreationWizard_getState`
+   - Name: `issueCreation_getState`
    - Parameters: None
    - Purpose: Retrieve current wizard state
    - Returns: Current wizard state object or null if no wizard is active
 
 2. **Check Wizard Status Tool**
-   - Name: `mcp_IssueCreationWizard_getStatus`
+   - Name: `issueCreation_getStatus`
    - Parameters: None
    - Purpose: Check if a wizard is currently in progress
    - Returns: Status object with active flag and metadata
 
 3. **Reset Wizard State Tool**
-   - Name: `mcp_IssueCreationWizard_resetState`
+   - Name: `issueCreation_resetState`
    - Parameters: 
      ```typescript
      { 
@@ -137,7 +137,7 @@ Following the Model Context Protocol (MCP) architecture, we'll implement state m
    - Returns: Success/failure status
 
 4. **Update Wizard State Tool**
-   - Name: `mcp_IssueCreationWizard_updateState`
+   - Name: `issueCreation_updateState`
    - Parameters: 
      ```typescript
      {
@@ -148,7 +148,7 @@ Following the Model Context Protocol (MCP) architecture, we'll implement state m
    - Returns: Updated wizard state with validation results
 
 5. **Create Issue Tool**
-   - Name: `mcp_IssueCreationWizard_createIssue`
+   - Name: `issueCreation_createIssue`
    - Parameters: None (uses current wizard state)
    - Purpose: Creates the Jira issue using the current wizard state
    - Returns: Issue creation result with key and URL
@@ -160,7 +160,7 @@ Each tool will follow the existing pattern in the codebase:
 ```typescript
 // Tool definition
 export const getWizardStateTool = {
-  name: 'mcp_IssueCreationWizard_getState',
+  name: 'issueCreation_getState',
   description: 'Retrieves the current state of the issue creation wizard',
   parameters: {
     properties: {},

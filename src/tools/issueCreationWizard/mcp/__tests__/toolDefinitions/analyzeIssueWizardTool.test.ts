@@ -9,7 +9,7 @@ import { analyzeIssueWizardTool } from '../../toolDefinitions/analyzeIssueWizard
 
 describe('analyzeIssueWizardTool', () => {
 	it('should have the correct name', () => {
-		expect(analyzeIssueWizardTool.name).toBe('mcp_IssueCreationWizard_analyzeIssue')
+		expect(analyzeIssueWizardTool.name).toBe('issueCreation_analyzeIssue')
 	})
 
 	it('should have a descriptive description', () => {

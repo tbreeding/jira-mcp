@@ -44,7 +44,7 @@ describe('updateStateWithMetadata', () => {
 			validation: { errors: {}, warnings: {} },
 			analysis: { complexity: { score: 5 } },
 			timestamp: Date.now(),
-		}
+		} as WizardState
 		mockMetadata = {
 			standard: [
 				{

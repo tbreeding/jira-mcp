@@ -11,7 +11,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * Get the current state of the issue creation wizard
  */
 export const getStateWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_getState',
+	name: 'issueCreation_getState',
 	description:
 		'Get the current internal state of the issue creation wizard, including selected project, issue type, and entered field values. Useful for checking progress or debugging.',
 	inputSchema: {

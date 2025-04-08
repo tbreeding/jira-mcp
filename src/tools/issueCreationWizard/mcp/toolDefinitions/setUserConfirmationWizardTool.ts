@@ -10,7 +10,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  * Tool definition for setting the user confirmation flag
  */
 export const setUserConfirmationWizardTool: Tool = {
-	name: 'mcp_IssueCreationWizard_setUserConfirmation',
+	name: 'issueCreation_setUserConfirmation',
 	description: `Sets the user confirmation flag for the current issue creation session. CRITICAL: Wait for the user to confirm issue creation before calling this tool.`,
 	inputSchema: {
 		type: 'object',
