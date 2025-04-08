@@ -1,4 +1,4 @@
-# Jira MCP Toolset (Placeholder Title - Replace with actual package name)
+# Jira MCP Server
 
 A collection of tools designed for interacting with Jira via the Model Context Protocol (MCP), providing core Jira functionalities and a guided Issue Creation Wizard.
 
