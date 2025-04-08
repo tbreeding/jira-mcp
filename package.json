@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"author": "",
 	"description": "Jira MCP Server",
-	"private": true,
+	"private": false,
 	"files": [
 		"build"
 	],
