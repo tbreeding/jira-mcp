@@ -63,5 +63,8 @@
 	"jestSonar": {
 		"reportPath": "coverage",
 		"reportFile": "sonar.xml"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }
