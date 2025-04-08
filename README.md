@@ -4,10 +4,27 @@ A collection of tools designed for interacting with Jira via the Model Context P
 
 ## Installation
 
-To install this package, use npm:
+To install this into a client:
 
 ```bash
-npm install jira-mcp # Replace with your actual package name
+{
+  "mcpServers": {
+    "JiraMCP_Published": {
+      "command": "npx",
+      "args": [
+        "@timbreeding/jira-mcp-server@latest",
+        "--jira-base-url=https://example.atlassian.net",
+        "--jira-username=someJiraUserEmail@domain.com",
+        "--jira-api-token=<your jira token>"
+      ],
+      "env": {
+        "DEBUG": "true",
+        "LOG_FILE_PATH": "" // Some full path. If blank, it will not write logs to a file.
+      }
+    }
+  }
+}
+
 ```
 
 ## Usage
@@ -15,14 +32,7 @@ npm install jira-mcp # Replace with your actual package name
 ## Configuration
 
 ### Environment Variables
-
-This application requires the following environment variables to be set for Jira integration:
-
-- `JIRA_BASE_URL`: Your Jira instance URL (e.g., `https://your-domain.atlassian.net`)
-- `JIRA_USERNAME`: Your Jira username or email associated with the API token.
-- `JIRA_API_TOKEN`: Your generated Jira API token.
-
-These variables provide the necessary credentials and endpoint for the tools to communicate with your Jira instance.
+ For running locally, you can put the DEBUG and LOG_FILE_PATH into your .env.
 
 ## Available Tools
 
@@ -83,4 +93,4 @@ _(Ensure you have built the project first if using `build/index.js`)_
 
 ## License
 
-This project is licensed under the [Your License Name] License - see the `LICENSE` file for details. (Replace `[Your License Name]` with the actual license, e.g., MIT, ISC)
+This project is licensed under the MIT License - see the `LICENSE` file for details.
