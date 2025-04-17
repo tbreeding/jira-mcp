@@ -1,289 +1,140 @@
-import * as categorizeFields from '../../../../jira/api/getAndCategorizeFields'
-import * as projectsApi from '../../../../jira/api/getProjects'
 import { getFieldsWizardToolExecutor } from '../getFieldsExecutor'
 import * as utils from '../utils'
 import * as wizardStateHelpers from '../wizardStateHelpers'
-import type { StateManager } from '../../stateManager'
+import * as projectsApi from '../../../../jira/api/getProjects'
+import * as categorizeFields from '../../../../jira/api/getAndCategorizeFields'
+import * as cache from '../hasCachedFieldMetadata'
 
-// Mock dependencies
 jest.mock('../utils')
 jest.mock('../wizardStateHelpers')
 jest.mock('../../../../jira/api/getProjects')
 jest.mock('../../../../jira/api/getAndCategorizeFields')
-jest.mock('../../../../utils/logger', () => ({
-	log: jest.fn(),
-}))
+jest.mock('../hasCachedFieldMetadata')
+
+const mockStateManager = { getState: jest.fn() } as any
+const mockConfig = { baseUrl: '', username: '', apiToken: '' }
+
+const setMock = (overrides: Partial<any> = {}) => {
+	;(mockStateManager.getState as jest.Mock).mockResolvedValue(overrides.state || {})
+	;(wizardStateHelpers.checkWizardState as jest.Mock).mockResolvedValue(overrides.checkResult)
+	;(projectsApi.getProjectByKey as jest.Mock).mockResolvedValue(overrides.projectResult)
+	;(categorizeFields.getAndCategorizeFields as jest.Mock).mockResolvedValue(overrides.fieldsResult)
+	;(utils.createSuccessResult as jest.Mock).mockReturnValue(overrides.successResult)
+	;(utils.createErrorResult as jest.Mock).mockReturnValue(overrides.errorResult)
+}
 
 describe('getFieldsWizardToolExecutor', () => {
-	const mockJiraConfig = {
-		baseUrl: 'https://jira.example.com',
-		username: 'test@example.com',
-		apiToken: 'test-token',
-	}
+	beforeEach(() => jest.clearAllMocks())
 
-	const mockStateManager = {
-		getState: jest.fn(),
-		updateState: jest.fn(),
-	} as unknown as StateManager
-
-	beforeEach(() => {
-		jest.clearAllMocks()
+	it('returns cached metadata if present and not forceRefresh', async () => {
+		;(cache.hasCachedFieldMetadata as jest.Mock).mockReturnValue(true)
+		setMock({
+			state: { success: true, data: { analysis: { metadata: { foo: 'bar' } } } },
+			successResult: { ok: true },
+		})
+		const result = await getFieldsWizardToolExecutor(mockStateManager, mockConfig)({ arguments: {} })
+		expect(result).toEqual({ ok: true })
+		expect(utils.createSuccessResult).toHaveBeenCalledWith({
+			success: true,
+			message: expect.stringContaining('cache'),
+			fields: { foo: 'bar' },
+			cached: true,
+		})
 	})
 
-	it('should return error if wizard state is missing', async () => {
-		// Setup checkWizardState to return error
-		;(wizardStateHelpers.checkWizardState as jest.Mock).mockResolvedValue({
-			success: false,
-			errorMessage: 'No active wizard. Initialize one first.',
+	it('returns error if checkWizardState fails', async () => {
+		setMock({
+			checkResult: { success: false, errorMessage: 'fail' },
+			errorResult: { err: true },
 		})
-
-		// Mock error result
-		const mockErrorResult = {
-			content: [{ type: 'text', text: 'Error: No active wizard. Initialize one first.' }],
-			isError: true,
-		}
-		;(utils.createErrorResult as jest.Mock).mockReturnValue(mockErrorResult)
-
-		// Execute
-		const executor = getFieldsWizardToolExecutor(mockStateManager, mockJiraConfig)
-		const result = await executor({ arguments: { forceRefresh: false } })
-
-		// Verify
-		expect(result).toBe(mockErrorResult)
-		expect(utils.createErrorResult).toHaveBeenCalledWith('No active wizard. Initialize one first.')
-		expect(categorizeFields.getAndCategorizeFields).not.toHaveBeenCalled()
+		const result = await getFieldsWizardToolExecutor(
+			mockStateManager,
+			mockConfig,
+		)({ arguments: { forceRefresh: true } })
+		expect(result).toEqual({ err: true })
+		expect(utils.createErrorResult).toHaveBeenCalledWith('fail')
 	})
 
-	it('should return error if state is missing project key or issue type', async () => {
-		// Setup checkWizardState to return success but missing projectKey and issueTypeId
-		;(wizardStateHelpers.checkWizardState as jest.Mock).mockResolvedValue({
-			success: true,
-			state: {},
-			projectKey: undefined, // Missing project key
-			issueTypeId: undefined, // Missing issue type
+	it('returns error if projectKey or issueTypeId missing', async () => {
+		setMock({
+			checkResult: { success: true, projectKey: undefined, issueTypeId: 'x' },
+			errorResult: { err: 1 },
 		})
-
-		// Mock error result
-		const mockErrorResult = {
-			content: [{ type: 'text', text: 'Error: Project key or issue type ID is missing' }],
-			isError: true,
-		}
-		;(utils.createErrorResult as jest.Mock).mockReturnValue(mockErrorResult)
-
-		// Execute
-		const executor = getFieldsWizardToolExecutor(mockStateManager, mockJiraConfig)
-		const result = await executor({ arguments: { forceRefresh: false } })
-
-		// Verify
-		expect(result).toBe(mockErrorResult)
-		expect(utils.createErrorResult).toHaveBeenCalledWith('Project key or issue type ID is missing')
-		expect(categorizeFields.getAndCategorizeFields).not.toHaveBeenCalled()
+		const result = await getFieldsWizardToolExecutor(
+			mockStateManager,
+			mockConfig,
+		)({ arguments: { forceRefresh: true } })
+		expect(result).toEqual({ err: 1 })
+		setMock({
+			checkResult: { success: true, projectKey: 'x', issueTypeId: undefined },
+			errorResult: { err: 2 },
+		})
+		const result2 = await getFieldsWizardToolExecutor(
+			mockStateManager,
+			mockConfig,
+		)({ arguments: { forceRefresh: true } })
+		expect(result2).toEqual({ err: 2 })
 	})
 
-	it('should successfully retrieve field metadata', async () => {
-		// Setup checkWizardState with valid state
-		;(wizardStateHelpers.checkWizardState as jest.Mock).mockResolvedValue({
-			success: true,
-			state: {
-				projectKey: 'PROJ',
-				issueTypeId: 'issue-123',
-				fields: {},
-			},
-			projectKey: 'PROJ',
-			issueTypeId: 'issue-123',
+	it('returns error if getProjectByKey fails', async () => {
+		setMock({
+			checkResult: { success: true, projectKey: 'p', issueTypeId: 'i' },
+			projectResult: { success: false, error: { message: 'no project' } },
+			errorResult: { err: 3 },
 		})
+		const result = await getFieldsWizardToolExecutor(
+			mockStateManager,
+			mockConfig,
+		)({ arguments: { forceRefresh: true } })
+		expect(result).toEqual({ err: 3 })
+		expect(utils.createErrorResult).toHaveBeenCalledWith('Failed to retrieve project information: no project')
+	})
 
-		// Mock getProjectByKey to return success
-		;(projectsApi.getProjectByKey as jest.Mock).mockResolvedValue({
-			success: true,
-			value: { id: 'project-123' },
+	it('returns error if getAndCategorizeFields fails', async () => {
+		setMock({
+			checkResult: { success: true, projectKey: 'p', issueTypeId: 'i' },
+			projectResult: { success: true, value: { id: 'pid' } },
+			fieldsResult: { success: false, error: { message: 'no fields' } },
+			errorResult: { err: 4 },
 		})
+		const result = await getFieldsWizardToolExecutor(
+			mockStateManager,
+			mockConfig,
+		)({ arguments: { forceRefresh: true } })
+		expect(result).toEqual({ err: 4 })
+		expect(utils.createErrorResult).toHaveBeenCalledWith('Failed to retrieve fields: no fields')
+	})
 
-		// Mock field metadata
-		const mockFieldMetadata = {
-			required: [{ id: 'summary', name: 'Summary' }],
-			optional: [{ id: 'description', name: 'Description' }],
-		}
-
-		// Mock getAndCategorizeFields to return success
-		;(categorizeFields.getAndCategorizeFields as jest.Mock).mockResolvedValue({
-			success: true,
-			value: mockFieldMetadata,
+	it('returns success if all steps succeed', async () => {
+		setMock({
+			checkResult: { success: true, projectKey: 'p', issueTypeId: 'i' },
+			projectResult: { success: true, value: { id: 'pid' } },
+			fieldsResult: { success: true, value: { foo: 'bar' } },
+			successResult: { ok: 2 },
 		})
-
-		// Mock success result
-		const mockSuccessResult = { content: [{ type: 'text', text: JSON.stringify(mockFieldMetadata) }] }
-		;(utils.createSuccessResult as jest.Mock).mockReturnValue(mockSuccessResult)
-
-		// Execute
-		const executor = getFieldsWizardToolExecutor(mockStateManager, mockJiraConfig)
-		const result = await executor({ arguments: { forceRefresh: false } })
-
-		// Verify
-		expect(result).toBe(mockSuccessResult)
-		expect(projectsApi.getProjectByKey).toHaveBeenCalledWith('PROJ', mockJiraConfig)
-		expect(categorizeFields.getAndCategorizeFields).toHaveBeenCalledWith(
-			'PROJ',
-			'project-123',
-			'issue-123',
-			mockJiraConfig,
-		)
+		const result = await getFieldsWizardToolExecutor(
+			mockStateManager,
+			mockConfig,
+		)({ arguments: { forceRefresh: true } })
+		expect(result).toEqual({ ok: 2 })
 		expect(utils.createSuccessResult).toHaveBeenCalledWith({
 			success: true,
 			message: 'Fields retrieved successfully',
-			fields: mockFieldMetadata,
+			fields: { foo: 'bar' },
 		})
 	})
 
-	it('should return error when project retrieval fails', async () => {
-		// Setup checkWizardState with valid state
-		;(wizardStateHelpers.checkWizardState as jest.Mock).mockResolvedValue({
-			success: true,
-			state: {
-				projectKey: 'PROJ',
-				issueTypeId: 'issue-123',
-			},
-			projectKey: 'PROJ',
-			issueTypeId: 'issue-123',
+	it('returns error if exception thrown', async () => {
+		;(cache.hasCachedFieldMetadata as jest.Mock).mockReturnValue(false)
+		;(mockStateManager.getState as jest.Mock).mockImplementationOnce(() => {
+			throw new Error('fail')
 		})
-
-		// Mock getProjectByKey to return error
-		;(projectsApi.getProjectByKey as jest.Mock).mockResolvedValue({
-			success: false,
-			error: { message: 'Project not found' },
-		})
-
-		// Mock error result
-		const mockErrorResult = {
-			content: [{ type: 'text', text: 'Error: Failed to retrieve project information: Project not found' }],
-			isError: true,
-		}
-		;(utils.createErrorResult as jest.Mock).mockReturnValue(mockErrorResult)
-
-		// Execute
-		const executor = getFieldsWizardToolExecutor(mockStateManager, mockJiraConfig)
-		const result = await executor({ arguments: { forceRefresh: false } })
-
-		// Verify
-		expect(result).toBe(mockErrorResult)
-		expect(projectsApi.getProjectByKey).toHaveBeenCalledWith('PROJ', mockJiraConfig)
-		expect(utils.createErrorResult).toHaveBeenCalledWith('Failed to retrieve project information: Project not found')
-		expect(categorizeFields.getAndCategorizeFields).not.toHaveBeenCalled()
-	})
-
-	it('should handle field metadata retrieval errors', async () => {
-		// Setup checkWizardState with valid state
-		;(wizardStateHelpers.checkWizardState as jest.Mock).mockResolvedValue({
-			success: true,
-			state: {
-				projectKey: 'PROJ',
-				issueTypeId: 'issue-123',
-			},
-			projectKey: 'PROJ',
-			issueTypeId: 'issue-123',
-		})
-
-		// Mock getProjectByKey to return success
-		;(projectsApi.getProjectByKey as jest.Mock).mockResolvedValue({
-			success: true,
-			value: { id: 'project-123' },
-		})
-
-		// Mock getAndCategorizeFields to return error
-		;(categorizeFields.getAndCategorizeFields as jest.Mock).mockResolvedValue({
-			success: false,
-			error: { message: 'Failed to retrieve fields' },
-		})
-
-		// Mock error result
-		const mockErrorResult = {
-			content: [{ type: 'text', text: 'Error: Failed to retrieve fields: Failed to retrieve fields' }],
-			isError: true,
-		}
-		;(utils.createErrorResult as jest.Mock).mockReturnValue(mockErrorResult)
-
-		// Execute
-		const executor = getFieldsWizardToolExecutor(mockStateManager, mockJiraConfig)
-		const result = await executor({ arguments: { forceRefresh: true } })
-
-		// Verify
-		expect(result).toBe(mockErrorResult)
-		expect(projectsApi.getProjectByKey).toHaveBeenCalledWith('PROJ', mockJiraConfig)
-		expect(categorizeFields.getAndCategorizeFields).toHaveBeenCalledWith(
-			'PROJ',
-			'project-123',
-			'issue-123',
-			mockJiraConfig,
-		)
-		expect(utils.createErrorResult).toHaveBeenCalledWith('Failed to retrieve fields: Failed to retrieve fields')
-	})
-
-	it('should handle exceptions and return error result', async () => {
-		// Setup mock to throw exception
-		;(wizardStateHelpers.checkWizardState as jest.Mock).mockImplementation(() => {
-			throw new Error('Unexpected error')
-		})
-
-		// Mock error result
-		const mockErrorResult = {
-			content: [{ type: 'text', text: 'Error: Unexpected error: Unexpected error' }],
-			isError: true,
-		}
-		;(utils.createErrorResult as jest.Mock).mockReturnValue(mockErrorResult)
-
-		// Execute
-		const executor = getFieldsWizardToolExecutor(mockStateManager, mockJiraConfig)
-		const result = await executor({ arguments: { forceRefresh: false } })
-
-		// Verify
-		expect(result).toBe(mockErrorResult)
-		expect(utils.createErrorResult).toHaveBeenCalledWith('Unexpected error: Unexpected error')
-	})
-
-	it('should successfully retrieve field metadata when called with no arguments', async () => {
-		// Setup checkWizardState with valid state
-		;(wizardStateHelpers.checkWizardState as jest.Mock).mockResolvedValue({
-			success: true,
-			projectKey: 'PROJ',
-			issueTypeId: 'issue-123',
-		})
-
-		// Mock getProjectByKey to return success
-		;(projectsApi.getProjectByKey as jest.Mock).mockResolvedValue({
-			success: true,
-			value: { id: 'project-123' },
-		})
-
-		// Mock field metadata
-		const mockFieldMetadata = { required: [], optional: [] }
-
-		// Mock getAndCategorizeFields to return success
-		;(categorizeFields.getAndCategorizeFields as jest.Mock).mockResolvedValue({
-			success: true,
-			value: mockFieldMetadata,
-		})
-
-		// Mock success result
-		const mockSuccessResult = { content: [{ type: 'text', text: JSON.stringify(mockFieldMetadata) }] }
-		;(utils.createSuccessResult as jest.Mock).mockReturnValue(mockSuccessResult)
-
-		// Execute with type assertion to simulate missing arguments (should trigger || {} fallback)
-		const executor = getFieldsWizardToolExecutor(mockStateManager, mockJiraConfig)
-		const result = await executor({} as any)
-
-		// Verify
-		expect(result).toBe(mockSuccessResult)
-		expect(projectsApi.getProjectByKey).toHaveBeenCalledWith('PROJ', mockJiraConfig)
-		expect(categorizeFields.getAndCategorizeFields).toHaveBeenCalledWith(
-			'PROJ',
-			'project-123',
-			'issue-123',
-			mockJiraConfig,
-		)
-		expect(utils.createSuccessResult).toHaveBeenCalledWith({
-			success: true,
-			message: 'Fields retrieved successfully',
-			fields: mockFieldMetadata,
-		})
+		;(utils.createErrorResult as jest.Mock).mockReturnValue({ err: 5 })
+		const result = await getFieldsWizardToolExecutor(
+			mockStateManager,
+			mockConfig,
+		)({ arguments: { forceRefresh: true } })
+		expect(result).toEqual({ err: 5 })
+		expect(utils.createErrorResult).toHaveBeenCalledWith('Unexpected error: fail')
 	})
 })

@@ -7,25 +7,17 @@
  */
 
 import { log } from '../../utils/logger'
-import { formatDescriptionForAdf as defaultFormatAdf } from './formatAdf'
-import { formatUserField as defaultFormatUser } from './formatUserField'
 import { transformFieldsForPayload } from './utils/transformFieldsForPayload'
 import type { CreateIssueFields } from './createIssue'
-import type { ADFDocument } from '../types/atlassianDocument.types'
 
 interface CreateIssueRequest extends Record<string, unknown> {
 	fields: CreateIssueFields
 	update: Record<string, unknown>
 }
 
-export function buildCreateIssuePayload(
-	fields: CreateIssueFields,
-	logger: typeof log = log,
-	formatDescFn: (text: unknown) => ADFDocument | undefined = defaultFormatAdf,
-	formatUserFn: typeof defaultFormatUser = defaultFormatUser,
-): CreateIssueRequest {
+export function buildCreateIssuePayload(fields: CreateIssueFields, logger: typeof log = log): CreateIssueRequest {
 	return {
-		fields: transformFieldsForPayload(fields, logger, formatDescFn, formatUserFn),
+		fields: transformFieldsForPayload(fields, logger),
 		update: {},
 	}
 }

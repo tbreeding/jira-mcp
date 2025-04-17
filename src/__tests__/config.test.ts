@@ -50,6 +50,8 @@ describe('Config Module', function () {
 				'issueCreation_setAnalysisComplete',
 				'issueCreation_setUserConfirmation',
 				'issueCreation_analyzeIssue',
+				'issueUpdateWizard_updateIssueFromState',
+				'issueUpdateWizard_loadIssueIntoState',
 			])
 		})
 	})

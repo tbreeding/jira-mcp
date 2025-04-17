@@ -1,8 +1,6 @@
 import { buildCreateIssuePayload } from '../createIssuePayload'
 import type { CreateIssueFields } from '../createIssue'
 import { log } from '../../../utils/logger' // Import default logger
-import { formatDescriptionForAdf as defaultFormatAdf } from '../formatAdf' // Import default ADF formatter
-import { formatUserField as defaultFormatUser } from '../formatUserField' // Import default user formatter
 
 // Mock the core transformation utility using Jest
 jest.mock('../utils/transformFieldsForPayload', () => ({
@@ -62,9 +60,7 @@ describe('buildCreateIssuePayload', () => {
 		expect(mockedTransform).toHaveBeenCalledTimes(1) // Use Jest's toHaveBeenCalledTimes
 		expect(mockedTransform).toHaveBeenCalledWith(
 			mockFields,
-			log, // Expect default logger
-			defaultFormatAdf, // Expect default ADF formatter
-			defaultFormatUser, // Expect default user formatter
+			log, // Only logger is passed as second argument
 		)
 
 		// Verify the structure of the returned payload
@@ -85,8 +81,6 @@ describe('buildCreateIssuePayload', () => {
 		}
 
 		const mockLogger = jest.fn() // Use jest.fn()
-		const mockFormatDesc = jest.fn().mockReturnValue(undefined) // Use jest.fn()
-		const mockFormatUser = jest.fn().mockReturnValue({ accountId: 'custom' }) // Use jest.fn()
 		const expectedTransformedFields = {
 			project: { key: 'PROJ' },
 			issuetype: { id: '10000' },
@@ -95,11 +89,11 @@ describe('buildCreateIssuePayload', () => {
 
 		mockedTransform.mockReturnValue(expectedTransformedFields)
 
-		const payload = buildCreateIssuePayload(mockFields, mockLogger, mockFormatDesc, mockFormatUser)
+		const payload = buildCreateIssuePayload(mockFields, mockLogger)
 
 		// Verify transformFieldsForPayload was called correctly with custom functions
 		expect(mockedTransform).toHaveBeenCalledTimes(1) // Use Jest's toHaveBeenCalledTimes
-		expect(mockedTransform).toHaveBeenCalledWith(mockFields, mockLogger, mockFormatDesc, mockFormatUser)
+		expect(mockedTransform).toHaveBeenCalledWith(mockFields, mockLogger)
 
 		// Verify the structure of the returned payload
 		expect(payload).toEqual({

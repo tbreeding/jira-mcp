@@ -9,11 +9,16 @@ jest.mock('../../../utils/logger', () => ({
 }))
 
 // Mock global fetch
+const mockHeaders = new Headers({ 'content-type': 'application/json' })
+const mockText = jest.fn()
+const mockClone = jest.fn(() => ({ text: mockText }))
 const mockFetchResponse = {
 	ok: true,
 	status: 200,
 	statusText: 'OK',
 	json: jest.fn(),
+	headers: mockHeaders,
+	clone: mockClone,
 }
 
 global.fetch = jest.fn().mockResolvedValue(mockFetchResponse)
@@ -37,6 +42,8 @@ describe('callJiraApi', () => {
 		mockFetchResponse.ok = true
 		mockFetchResponse.status = 200
 		mockFetchResponse.statusText = 'OK'
+		mockText.mockResolvedValue(JSON.stringify(mockResponseData))
+		mockClone.mockClear()
 
 		// Mock the handleApiError function to return a Promise<Try<never>>
 		mockHandleApiError.mockImplementation((response, message) =>
@@ -202,5 +209,26 @@ describe('callJiraApi', () => {
 		// Verify
 		expect(result.success).toBe(false)
 		expect(result.error).toEqual(jsonError)
+	})
+
+	test('should return Success(null) for 204 No Content responses', async () => {
+		// Setup
+		mockFetchResponse.status = 204
+		mockFetchResponse.ok = true
+		mockFetchResponse.statusText = 'No Content'
+		// 204 responses have no body, so .json() should not be called
+		mockFetchResponse.json.mockClear()
+
+		// Execute
+		const result = await callJiraApi({
+			config: mockConfig,
+			endpoint: mockEndpoint,
+			method: RestMethod.DELETE, // DELETE is a common method for 204
+		})
+
+		// Verify
+		expect(result.success).toBe(true)
+		expect(result.value).toBeNull()
+		expect(mockFetchResponse.json).not.toHaveBeenCalled()
 	})
 })

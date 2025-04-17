@@ -38,11 +38,21 @@ export function isValidTransition(currentStep: WizardStep, targetStep: WizardSte
 
 /**
  * Attempts to transition the state to a new step, checking requirements and validity
+ * @param forceStepTransition If true, allows any transition regardless of normal rules
  */
 export function transitionState(
 	currentState: WizardState,
 	targetStep: WizardStep,
+	forceStepTransition = false,
 ): { success: true; data: WizardState } | ErrorResult {
+	// If forcing, allow any transition directly
+	if (forceStepTransition) {
+		return createSuccess({
+			...currentState,
+			currentStep: targetStep,
+			timestamp: Date.now(),
+		})
+	}
 	// No change in step
 	if (currentState.currentStep === targetStep) {
 		return createSuccess({ ...currentState })

@@ -11,24 +11,36 @@
 import { getAndCategorizeFields } from '../../../jira/api/getAndCategorizeFields'
 import { getProjectByKey } from '../../../jira/api/getProjects'
 import { WizardStep } from '../types'
+import { hasCachedFieldMetadata } from './hasCachedFieldMetadata'
 import { createSuccessResult, createErrorResult } from './utils'
 import { checkWizardState } from './wizardStateHelpers'
 import type { WizardStateResult } from './wizardStateHelpers'
 import type { JiraApiConfig } from '../../../jira/api/apiTypes'
 import type { ToolExecutor } from '../../../types'
 import type { StateManager } from '../stateManager'
+import type { WizardState } from '../types'
 
 /**
  * Creates a tool executor for getting available fields
  */
 export function getFieldsWizardToolExecutor(stateManager: StateManager, jiraConfig: JiraApiConfig): ToolExecutor {
-	// Even though we're currently not using the parameters, we should still extract them correctly
 	return async function (parameters: Record<string, unknown>) {
 		try {
-			// Fix: Extract parameters from the arguments object instead of directly from parameters
-			// Not actively using parameters now, but still fixing for consistency and future use
+			const { forceRefresh } = parameters.arguments as Record<string, unknown>
 
-			const _args = (parameters.arguments as Record<string, unknown>) || {}
+			// 1. Check wizard state for existing field metadata
+			const wizardStateResult = await stateManager.getState()
+			if (hasCachedFieldMetadata(wizardStateResult) && !forceRefresh) {
+				const wizardState = (wizardStateResult as { success: true; data: WizardState }).data
+				return createSuccessResult({
+					success: true,
+					message: 'Fields returned from wizard state cache (no API call made)',
+					// casting here is safe because we know the metadata is present
+					// because of the check above
+					fields: (wizardState.analysis as { metadata: Record<string, unknown> }).metadata,
+					cached: true,
+				})
+			}
 
 			// Check wizard state and get project/issue type IDs
 			const checkResult = await checkWizardState(stateManager, WizardStep.ISSUE_TYPE_SELECTION)

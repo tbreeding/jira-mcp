@@ -43,7 +43,6 @@ export function updateFieldsWizardToolExecutor(stateManager: StateManager, jiraC
 
 			const fields = args.fields as Record<string, unknown>
 			log(`DEBUG: Fields parameter: ${JSON.stringify(fields)}`)
-			const validateOnly = Boolean(args.validateOnly)
 
 			if (typeof fields !== 'object') {
 				return createErrorResult('Fields parameter must be an object')
@@ -72,7 +71,6 @@ export function updateFieldsWizardToolExecutor(stateManager: StateManager, jiraC
 			// Process fields and update state
 			const processResult = await processFieldsAndState(stateManager, jiraConfig, stateInfo, {
 				fields,
-				validateOnly,
 			})
 			log(`DEBUG: Process result: ${JSON.stringify(processResult)}`)
 			return processResultToToolResult(processResult)

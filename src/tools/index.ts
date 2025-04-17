@@ -9,8 +9,10 @@
 
 import { config } from '../config'
 import { log } from '../utils/logger'
-// Import Issue Creation Wizard tools
 import { issueCreationWizardTools, getIssueCreationWizardToolExecutors } from './issueCreationWizard/mcp'
+import { getIssueUpdateWizardToolExecutors } from './issueUpdateWizard/mcp/getIssueUpdateWizardToolExecutors'
+import { loadIssueIntoStateTool } from './issueUpdateWizard/mcp/toolDefinitions/loadIssueIntoStateTool'
+import { updateIssueFromStateTool } from './issueUpdateWizard/mcp/toolDefinitions/updateIssueFromStateTool'
 import { analyzeIssueTool, getAnalyzeIssueToolExecutor } from './jira/analyzeIssue'
 import { getIssueTool, getIssueToolExecutor } from './jira/getIssue'
 import { jiraGetTool, getJiraGetToolExecutor } from './jira/jiraGet/jiraGetTool'
@@ -26,41 +28,42 @@ const toolRegistry = new Map<string, ToolRegistryEntry>()
 
 /**
  * Initialize the tool registry with all available tools
- * @param jiraConfig - Jira API configuration
- * @param stateManager - StateManager instance for issue creation wizard tools
  */
 export function initializeToolRegistry(jiraConfig: JiraApiConfig, stateManager: StateManager): void {
-	// Register the getJiraIssue tool with validated config
+	// Core Jira tools
 	registerTool(getIssueTool, getIssueToolExecutor(jiraConfig))
-	// Register the analyzeJiraIssue tool
 	registerTool(analyzeIssueTool, getAnalyzeIssueToolExecutor(jiraConfig))
-	// Register the jiraGet tool
 	registerTool(jiraGetTool, getJiraGetToolExecutor(jiraConfig))
-	// Register the getIssuesByJql tool
 	registerTool(getIssuesByJqlTool, getIssuesByJqlToolExecutor(jiraConfig))
 
-	// Register Issue Creation Wizard tools
-	const wizardToolExecutors = getIssueCreationWizardToolExecutors(jiraConfig, stateManager)
-	registerTool(issueCreationWizardTools.getStateWizardTool, wizardToolExecutors.getStateWizardToolExecutor)
-	registerTool(issueCreationWizardTools.getStatusWizardTool, wizardToolExecutors.getStatusWizardToolExecutor)
-	registerTool(issueCreationWizardTools.resetStateWizardTool, wizardToolExecutors.resetStateWizardToolExecutor)
-	registerTool(issueCreationWizardTools.updateStateWizardTool, wizardToolExecutors.updateStateWizardToolExecutor)
-	registerTool(issueCreationWizardTools.createIssueWizardTool, wizardToolExecutors.createIssueWizardToolExecutor)
-	registerTool(issueCreationWizardTools.getProjectsWizardTool, wizardToolExecutors.getProjectsWizardToolExecutor)
-	registerTool(issueCreationWizardTools.getIssueTypesWizardTool, wizardToolExecutors.getIssueTypesWizardToolExecutor)
-	registerTool(issueCreationWizardTools.getFieldsWizardTool, wizardToolExecutors.getFieldsWizardToolExecutor)
-	registerTool(issueCreationWizardTools.updateFieldsWizardTool, wizardToolExecutors.updateFieldsWizardToolExecutor)
-	registerTool(issueCreationWizardTools.initiateStateWizardTool, wizardToolExecutors.initiateStateWizardToolExecutor)
-	registerTool(
-		issueCreationWizardTools.setAnalysisCompleteWizardTool,
-		wizardToolExecutors.setAnalysisCompleteWizardToolExecutor,
-	)
-	registerTool(
-		issueCreationWizardTools.setUserConfirmationWizardTool,
-		wizardToolExecutors.setUserConfirmationWizardToolExecutor,
-	)
+	// Issue Creation Wizard tools
+	const wizardExecs = getIssueCreationWizardToolExecutors(jiraConfig, stateManager)
+	const wizardTools = issueCreationWizardTools
+	// Register all creation wizard tools
+	registerToolPair(wizardTools.getStateWizardTool, wizardExecs.getStateWizardToolExecutor)
+	registerToolPair(wizardTools.getStatusWizardTool, wizardExecs.getStatusWizardToolExecutor)
+	registerToolPair(wizardTools.resetStateWizardTool, wizardExecs.resetStateWizardToolExecutor)
+	registerToolPair(wizardTools.updateStateWizardTool, wizardExecs.updateStateWizardToolExecutor)
+	registerToolPair(wizardTools.createIssueWizardTool, wizardExecs.createIssueWizardToolExecutor)
+	registerToolPair(wizardTools.getProjectsWizardTool, wizardExecs.getProjectsWizardToolExecutor)
+	registerToolPair(wizardTools.getIssueTypesWizardTool, wizardExecs.getIssueTypesWizardToolExecutor)
+	registerToolPair(wizardTools.getFieldsWizardTool, wizardExecs.getFieldsWizardToolExecutor)
+	registerToolPair(wizardTools.updateFieldsWizardTool, wizardExecs.updateFieldsWizardToolExecutor)
+	registerToolPair(wizardTools.initiateStateWizardTool, wizardExecs.initiateStateWizardToolExecutor)
+	registerToolPair(wizardTools.setAnalysisCompleteWizardTool, wizardExecs.setAnalysisCompleteWizardToolExecutor)
+	registerToolPair(wizardTools.setUserConfirmationWizardTool, wizardExecs.setUserConfirmationWizardToolExecutor)
+
+	// Issue Update Wizard tools
+	const updateExecs = getIssueUpdateWizardToolExecutors(jiraConfig, stateManager)
+	registerToolPair(updateIssueFromStateTool, updateExecs.updateIssueFromStateToolExecutor)
+	registerToolPair(loadIssueIntoStateTool, updateExecs.loadIssueIntoStateToolExecutor)
 
 	log(`INFO: Initialized tool registry with ${toolRegistry.size} tools`)
+}
+
+/** Helper to register a tool and executor pair */
+function registerToolPair(tool: Tool, executor: ToolExecutor): void {
+	registerTool(tool, executor)
 }
 
 /** Register a tool in the registry */
@@ -69,10 +72,9 @@ export function registerTool(tool: Tool, executor: ToolExecutor): boolean {
 		toolRegistry.set(tool.name, { tool, executor })
 		log(`DEBUG: Registered tool: ${tool.name}`)
 		return true
-	} else {
-		log(`DEBUG: Tool ${tool.name} is disabled in configuration`)
-		return false
 	}
+	log(`DEBUG: Tool ${tool.name} is disabled in configuration`)
+	return false
 }
 
 /** Get all registered tools */

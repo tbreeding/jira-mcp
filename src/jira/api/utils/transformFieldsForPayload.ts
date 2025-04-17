@@ -6,58 +6,58 @@
  * formatter functions. It relies on `copyArbitraryFields` to handle any
  * other non-standard fields.
  */
-import { copyArbitraryFields } from './copyArbitraryFields'
+import { formatDescriptionForAdf } from '../formatAdf'
+import { formatUserField } from '../formatUserField'
 import type { log } from '../../../utils/logger'
-import type { ADFDocument } from '../../types/atlassianDocument.types'
 import type { CreateIssueFields } from '../createIssue'
-import type { formatUserField as FormatUserFnType } from '../formatUserField' // Import type only for function signature
 
-/**
- * Transforms fields from wizard format to Jira API format using injected formatters.
- * @param fields The fields from wizard state
- * @param logger The logger function
- * @param formatDescFn The function to format description to ADF
- * @param formatUserFn The function to format user fields
- * @returns Transformed fields ready for API submission
- */
+function shouldSkipField(_key: string, value: unknown): boolean {
+	return value === null || value === undefined || value === ''
+}
+
+interface FieldHandler {
+	transform: (key: string, value: unknown, logger: typeof log) => [string, unknown]
+}
+
+const defaultHandler: FieldHandler = {
+	transform: (key, value) => [key, value],
+}
+
+const handlers: Record<string, FieldHandler> = {
+	summary: defaultHandler,
+	issuetype: defaultHandler,
+	project: defaultHandler,
+	description: {
+		transform: (key, value) => {
+			if (typeof value === 'string') return [key, formatDescriptionForAdf(value)]
+
+			return [key, value]
+		},
+	},
+	assignee: {
+		transform: (key, value, logger) => [key, formatUserField(value, 'Assignee', logger)],
+	},
+	reporter: {
+		transform: (key, value, logger) => [key, formatUserField(value, 'Reporter', logger)],
+	},
+}
+
+// Overload signatures
+export function transformFieldsForPayload(fields: CreateIssueFields, logger: typeof log): CreateIssueFields
 export function transformFieldsForPayload(
-	fields: CreateIssueFields,
+	fields: Partial<CreateIssueFields>,
 	logger: typeof log,
-	formatDescFn: (text: unknown) => ADFDocument | undefined,
-	formatUserFn: typeof FormatUserFnType,
-): CreateIssueFields {
-	const result: CreateIssueFields = {
-		summary: fields.summary,
-		project: fields.project,
-		issuetype: fields.issuetype,
-	}
-
-	// Copy other arbitrary fields FIRST to avoid overwriting formatted fields
-	copyArbitraryFields(fields, result)
-
-	// Handle description using injected function
-	const formattedDescription = formatDescFn(fields.description)
-	if (formattedDescription) {
-		result.description = formattedDescription
-	}
-
-	// Handle reporter using injected function
-	const formattedReporter = formatUserFn(fields.reporter, 'Reporter', logger)
-	if (formattedReporter) {
-		result.reporter = formattedReporter
-	} else {
-		// Ensure raw reporter field copied by copyArbitraryFields is removed if invalid
-		delete result.reporter
-	}
-
-	// Handle assignee using injected function
-	const formattedAssignee = formatUserFn(fields.assignee, 'Assignee', logger)
-	if (formattedAssignee) {
-		result.assignee = formattedAssignee
-	} else {
-		// Ensure raw assignee field copied by copyArbitraryFields is removed if invalid
-		delete result.assignee
-	}
-
-	return result
+): Partial<CreateIssueFields>
+// Implementation
+export function transformFieldsForPayload(
+	fields: Partial<CreateIssueFields>,
+	logger: typeof log,
+): Partial<CreateIssueFields> {
+	return Object.entries(fields).reduce((result, [key, value]) => {
+		if (shouldSkipField(key, value)) return result
+		const handler = handlers[key] ?? defaultHandler
+		const [k, v] = handler.transform(key, value, logger)
+		result[k] = v
+		return result
+	}, {} as Partial<CreateIssueFields>)
 }

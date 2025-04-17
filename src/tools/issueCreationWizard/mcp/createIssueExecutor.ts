@@ -14,6 +14,7 @@ import { validateWizardState } from './validateWizardState'
 import type { JiraApiConfig } from '../../../jira/api/apiTypes'
 import type { ToolExecutor } from '../../../types'
 import type { StateManager } from '../stateManager'
+import type { WizardMode } from '../types'
 
 /**
  * The core logic for creating a Jira issue from the wizard state.
@@ -57,6 +58,19 @@ async function executeIssueCreation(
 		const apiResult = await createIssue(jiraConfig, issueData)
 
 		// 4. Handle API Response
+		if (apiResult.success) {
+			// Update the state with the new issue key for potential immediate updates
+			log(`Updating state with new issue key: ${apiResult.value.key}`)
+			const updateResult = stateManager.updateState({
+				issueKey: apiResult.value.key,
+				mode: 'updating' as WizardMode,
+			})
+
+			if (!updateResult.success) {
+				log(`WARNING: Failed to update state with issue key: ${updateResult.error.message}`)
+			}
+		}
+
 		return handleApiResponse(apiResult, issueData, jiraConfig)
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error)

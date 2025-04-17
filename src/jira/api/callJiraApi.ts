@@ -9,6 +9,7 @@
 import { log } from '../../utils/logger'
 import { Failure, Success } from '../../utils/try'
 import { handleApiError } from './apiUtils'
+import { buildRequestConfig } from './buildRequestConfig'
 import type { JiraApiConfig } from './apiTypes'
 import type Try from '../../utils/try'
 
@@ -25,27 +26,6 @@ interface JiraApiCallOptions<TRequestBody extends Record<string, unknown>> {
 	endpoint: string
 	method: RestMethod
 	body?: TRequestBody
-}
-
-/**
- * Builds a request configuration for a Jira API call
- */
-function buildRequestConfig<TRequestBody>(auth: string, method: string, body?: TRequestBody): RequestInit {
-	const request: RequestInit = {
-		method,
-		headers: {
-			Authorization: `Basic ${auth}`,
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-		},
-	}
-
-	// Add body for non-GET requests
-	if (body && method !== 'GET') {
-		request.body = JSON.stringify(body)
-	}
-
-	return request
 }
 
 /**
@@ -70,17 +50,22 @@ export async function callJiraApi<TBody extends Record<string, unknown>, TRespon
 	try {
 		// Build and make the API request
 		const requestConfig = buildRequestConfig(auth, method, body)
+		log(`DEBUG: Request config for ${method} ${endpoint}: ${JSON.stringify(requestConfig)}`)
 		const response = await fetch(url, requestConfig)
 
-		// Log response status for debugging
+		// Log response status and headers for debugging
 		log(`DEBUG: Response status for ${method} ${endpoint}: ${response.status} ${response.statusText}`)
+		log(`DEBUG: Response headers for ${method} ${endpoint}: ${JSON.stringify([...response.headers])}`)
 
 		// If the response is not ok, return an error
 		if (!response.ok) {
 			return handleApiError(response, `Failed to ${method} ${endpoint}`)
 		}
 
-		// Get the response body as JSON
+		if (response.status === 204) {
+			return Success(null as TResponse)
+		}
+
 		const data = await response.json()
 
 		// Return the successful response

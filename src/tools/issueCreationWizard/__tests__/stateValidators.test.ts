@@ -138,4 +138,19 @@ describe('State Validators', () => {
 		// This transition should always succeed due to special case handling
 		expect(result.success).toBe(true)
 	})
+
+	it('should allow update when no step change is requested (partialState.currentStep undefined)', () => {
+		const result = validateStateTransition(baseState, { fields: { description: 'desc' } })
+		expect(result.success).toBe(true)
+	})
+
+	it('should allow update when currentStep is the same as currentState', () => {
+		const result = validateStateTransition(baseState, { currentStep: baseState.currentStep })
+		expect(result.success).toBe(true)
+	})
+
+	it('should return success with true when forceStepTransition is true', () => {
+		const result = validateStateTransition(baseState, { currentStep: WizardStep.PROJECT_SELECTION }, true)
+		expect(result).toEqual({ success: true, data: true })
+	})
 })

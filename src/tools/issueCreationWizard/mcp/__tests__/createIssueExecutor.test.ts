@@ -31,7 +31,7 @@ describe('createIssueWizardToolExecutor', () => {
 			isActive: jest.fn(),
 			initializeState: jest.fn(),
 			resetState: jest.fn(),
-			updateState: jest.fn(),
+			updateState: jest.fn().mockReturnValue({ success: true }),
 			serializeState: jest.fn(),
 			deserializeState: jest.fn(),
 			core: {},
@@ -269,6 +269,64 @@ describe('createIssueWizardToolExecutor', () => {
 		// Verify
 		expect(result.isError).toBe(true)
 		expect(result.content[0].text).toBe('Error: Unexpected error during issue creation: Unexpected error')
+	})
+
+	it('should handle state update failure after successful issue creation', async () => {
+		// Setup mocks
+		mockStateManager.getState.mockReturnValue({
+			success: true,
+			data: {
+				projectKey: 'PROJ',
+				issueTypeId: 'issue-123',
+				summary: 'Test issue',
+				description: 'Test description',
+				active: true,
+				currentStep: WizardStep.SUBMISSION,
+				fields: {
+					summary: 'Test issue',
+					description: 'Test description',
+				},
+				validation: { errors: {}, warnings: {} },
+				timestamp: 123456789,
+				analysisComplete: true,
+				userConfirmation: true,
+			} as WizardState,
+		})
+
+		// Mock successful issue creation
+		;(createIssue as jest.Mock).mockResolvedValue({
+			success: true,
+			value: {
+				key: 'PROJ-123',
+				id: '456',
+			},
+		})
+
+		// Mock state update failure
+		mockStateManager.updateState.mockReturnValueOnce({
+			success: false,
+			error: { message: 'Failed to update state', code: 'STATE_UPDATE_ERROR' },
+		})
+
+		// Execute
+		const executor = createIssueWizardToolExecutor(mockStateManager, mockJiraConfig)
+		const result = await executor({ arguments: {} })
+
+		// Verify
+		expect(result.isError).toBeUndefined()
+		expect(mockStateManager.updateState).toHaveBeenCalledWith({
+			issueKey: 'PROJ-123',
+			mode: 'updating',
+		})
+
+		// Verify that the issue was still created successfully despite the state update failure
+		const responseData = JSON.parse(result.content[0].text)
+		expect(responseData).toEqual({
+			success: true,
+			issueKey: 'PROJ-123',
+			summary: 'Test issue',
+			url: 'https://jira.example.com/browse/PROJ-123',
+		})
 	})
 
 	// Test for the specific branch coverage in lines 48-49

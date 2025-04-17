@@ -22,6 +22,11 @@ export enum WizardStep {
 }
 
 /**
+ * Defines the operating mode of the wizard
+ */
+export type WizardMode = 'creating' | 'updating'
+
+/**
  * Maps each wizard step to its numeric order in the process
  * Used for comparing steps and determining progress
  */
@@ -63,6 +68,10 @@ export interface WizardState {
 	timestamp: number
 	userConfirmation?: boolean // Whether user has explicitly approved issue creation
 	analysisComplete?: boolean // Whether analysis has been completed
+
+	// New fields for issue updating
+	issueKey?: string // The key of the issue being updated
+	mode?: WizardMode // The current mode of the wizard (creating or updating)
 }
 
 /**

@@ -13,18 +13,15 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
 export const updateFieldsWizardTool: Tool = {
 	name: 'issueCreation_updateFields',
 	description:
-		'Update specific field values in the wizard state after retrieving the necessary fields with `getFields`. Use `validateOnly` to check fields without saving.',
+		'Update and validate specific field values in the wizard state after retrieving the necessary fields with `getFields`. Fields are always validated and persisted if valid. If validation fails, an error is returned. Always check the response for side effect information.',
 	inputSchema: {
 		type: 'object',
 		properties: {
 			fields: {
 				type: 'object',
-				description: 'Field values to update in the wizard state',
+				description:
+					'Field values to validate and persist in the wizard state. Fields are always validated and persisted if valid. Otherwise, an error is returned.',
 				additionalProperties: true,
-			},
-			validateOnly: {
-				type: 'boolean',
-				description: 'Whether to only validate the fields without updating state',
 			},
 		},
 		required: ['fields'],
