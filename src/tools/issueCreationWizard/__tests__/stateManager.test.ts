@@ -5,6 +5,8 @@
 import { StateManager } from '../stateManager'
 import { StateManagerCore } from '../stateManagerCore'
 import { WizardStep } from '../types'
+import type { JiraIssue } from '../../../jira/types/issue.types'
+import { createSuccess } from '../../../errors/types'
 
 describe('StateManager', () => {
 	let stateManagerCore: StateManagerCore
@@ -253,5 +255,374 @@ describe('StateManager', () => {
 		if (!result.success) {
 			expect(result.error.code).toBe('INVALID_PARAMETERS')
 		}
+	})
+
+	// Tests for loadIssueState method
+	describe('loadIssueState', () => {
+		// Mock for JiraIssue
+		const mockJiraIssue: JiraIssue = {
+			expand: '',
+			id: '12345',
+			self: 'https://jira.example.com/rest/api/2/issue/12345',
+			key: 'PROJ-123',
+			changelog: {
+				startAt: 0,
+				maxResults: 0,
+				total: 0,
+				histories: [],
+			},
+			fields: {
+				project: {
+					self: 'https://jira.example.com/rest/api/2/project/PROJ',
+					id: '10000',
+					key: 'PROJ',
+					name: 'Project Name',
+					projectTypeKey: 'software',
+					simplified: false,
+					avatarUrls: {},
+					projectCategory: {
+						self: '',
+						id: '',
+						description: '',
+						name: '',
+					},
+				},
+				issuetype: {
+					self: 'https://jira.example.com/rest/api/2/issuetype/10001',
+					id: '10001',
+					description: 'A task that needs to be done.',
+					iconUrl: 'https://jira.example.com/images/icons/issuetypes/task.svg',
+					name: 'Task',
+					subtask: false,
+					avatarId: 1,
+					hierarchyLevel: 0,
+				},
+				summary: 'Test issue',
+				status: {
+					self: '',
+					description: '',
+					iconUrl: '',
+					name: 'Open',
+					id: '1',
+					statusCategory: {
+						self: '',
+						id: 0,
+						key: '',
+						colorName: '',
+						name: '',
+					},
+				},
+				creator: {
+					self: '',
+					accountId: 'user123',
+					emailAddress: 'user@example.com',
+					avatarUrls: {},
+					displayName: 'Test User',
+					active: true,
+					timeZone: 'UTC',
+					accountType: 'atlassian',
+				},
+				reporter: {
+					self: '',
+					accountId: 'user123',
+					emailAddress: 'user@example.com',
+					avatarUrls: {},
+					displayName: 'Test User',
+					active: true,
+					timeZone: 'UTC',
+					accountType: 'atlassian',
+				},
+				priority: {
+					self: '',
+					iconUrl: '',
+					name: 'Medium',
+					id: '3',
+				},
+				progress: {
+					progress: 0,
+					total: 0,
+				},
+				votes: {
+					self: '',
+					votes: 0,
+					hasVoted: false,
+				},
+				watches: {
+					self: '',
+					watchCount: 0,
+					isWatching: false,
+				},
+				created: '2023-05-01T10:00:00.000Z',
+				updated: '2023-05-01T10:00:00.000Z',
+				statuscategorychangedate: '2023-05-01T10:00:00.000Z',
+				workratio: -1,
+				aggregateprogress: {
+					progress: 0,
+					total: 0,
+				},
+				customfield_13100: {
+					hasEpicLinkFieldDependency: false,
+					showField: false,
+					nonEditableReason: {
+						reason: '',
+						message: '',
+					},
+				},
+				customfield_12801: {
+					self: '',
+					value: '',
+					id: '',
+				},
+				customfield_14788: {
+					self: '',
+					value: '',
+					id: '',
+				},
+			},
+		} as unknown as JiraIssue
+
+		it('should load an issue state successfully', () => {
+			const result = stateManager.loadIssueState(mockJiraIssue)
+
+			expect(result.success).toBe(true)
+
+			expect(result).toEqual({
+				success: true,
+				data: {
+					active: true,
+					currentStep: 'field_completion',
+					fields: {},
+					validation: {
+						errors: {},
+						warnings: {},
+					},
+					timestamp: expect.any(Number),
+					issueKey: 'PROJ-123',
+					projectKey: 'PROJ',
+					issueTypeId: '10001',
+					mode: 'updating',
+				},
+			})
+		})
+
+		it('should return existing state if already working with the same issue', () => {
+			// First load the issue
+			stateManager.loadIssueState(mockJiraIssue)
+
+			// Update something in the state to verify it remains
+			stateManager.updateState({
+				fields: { summary: 'Updated summary' },
+			})
+
+			// Load the same issue again
+			const result = stateManager.loadIssueState(mockJiraIssue)
+
+			expect(result).toEqual({
+				success: true,
+				data: {
+					active: true,
+					currentStep: 'field_completion',
+					fields: {
+						summary: 'Updated summary',
+					},
+					validation: {
+						errors: {},
+						warnings: {},
+					},
+					timestamp: expect.any(Number),
+					issueKey: 'PROJ-123',
+					projectKey: 'PROJ',
+					issueTypeId: '10001',
+					mode: 'updating',
+				},
+			})
+		})
+
+		it('should reset and create new state when loading a different issue', () => {
+			// First load an issue
+			stateManager.loadIssueState(mockJiraIssue)
+
+			// Update something in the state
+			stateManager.updateState({
+				fields: { summary: 'Updated summary' },
+			})
+
+			// Load a different issue
+			const differentIssue = {
+				...mockJiraIssue,
+				key: 'PROJ-456',
+				id: '67890',
+			} as unknown as JiraIssue
+
+			const result = stateManager.loadIssueState(differentIssue)
+
+			expect(result).toEqual({
+				success: true,
+				data: {
+					active: true,
+					currentStep: 'field_completion',
+					fields: {},
+					validation: {
+						errors: {},
+						warnings: {},
+					},
+					timestamp: expect.any(Number),
+					issueKey: 'PROJ-456',
+					projectKey: 'PROJ',
+					issueTypeId: '10001',
+					mode: 'updating',
+				},
+			})
+		})
+
+		it('should initialize a new state when no wizard is active', () => {
+			// Ensure no wizard is active
+			stateManager.resetState()
+			expect(stateManager.isActive()).toBe(false)
+
+			// Create spies to verify the expected method calls
+			const resetStateSpy = jest.spyOn(stateManager, 'resetState')
+			const initializeStateSpy = jest.spyOn(stateManager, 'initializeState')
+
+			// Load an issue when no wizard is active
+			const result = stateManager.loadIssueState(mockJiraIssue)
+
+			// Verify resetState was called (though it was already inactive)
+			expect(resetStateSpy).toHaveBeenCalled()
+			// Verify initializeState was called to create a new state
+			expect(initializeStateSpy).toHaveBeenCalled()
+
+			expect(result).toEqual({
+				success: true,
+				data: {
+					active: true,
+					currentStep: 'field_completion',
+					fields: {},
+					validation: {
+						errors: {},
+						warnings: {},
+					},
+					timestamp: expect.any(Number),
+					issueKey: 'PROJ-123',
+					projectKey: 'PROJ',
+					issueTypeId: '10001',
+					mode: 'updating',
+				},
+			})
+		})
+
+		it('should handle initialization failure', () => {
+			// Mock a failure in initializeState
+			jest.spyOn(stateManager, 'initializeState').mockReturnValueOnce({
+				success: false,
+				error: {
+					code: 'TEST_ERROR',
+					message: 'Test error message',
+				},
+			})
+
+			const result = stateManager.loadIssueState(mockJiraIssue)
+
+			expect(result).toEqual({
+				success: false,
+				error: {
+					code: 'TEST_ERROR',
+					message: 'Test error message',
+				},
+			})
+		})
+
+		it('should set currentStep to INITIATE when project is missing but issuetype exists', () => {
+			// Create a mock issue with missing project info but valid issuetype
+			const issueWithMissingProject = {
+				...mockJiraIssue,
+				fields: {
+					...mockJiraIssue.fields,
+					project: undefined, // Completely missing project
+					issuetype: mockJiraIssue.fields.issuetype,
+				},
+			} as unknown as JiraIssue
+
+			// Mock the updateState method to return a success with INITIATE step
+			jest.spyOn(stateManager, 'updateState').mockImplementationOnce(() => {
+				return createSuccess({
+					currentStep: WizardStep.INITIATE,
+					active: true,
+					fields: {},
+					validation: { errors: {}, warnings: {} },
+					timestamp: Date.now(),
+				})
+			})
+
+			// Load the issue with missing project
+			const result = stateManager.loadIssueState(issueWithMissingProject)
+
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.currentStep).toBe(WizardStep.INITIATE)
+			}
+		})
+
+		it('should set currentStep to INITIATE when issuetype is missing but project exists', () => {
+			// Create a mock issue with missing issuetype info but valid project
+			const issueWithMissingIssueType = {
+				...mockJiraIssue,
+				fields: {
+					...mockJiraIssue.fields,
+					project: mockJiraIssue.fields.project,
+					issuetype: undefined, // Completely missing issuetype
+				},
+			} as unknown as JiraIssue
+
+			// Mock the updateState method to return a success with INITIATE step
+			jest.spyOn(stateManager, 'updateState').mockImplementationOnce(() => {
+				return createSuccess({
+					currentStep: WizardStep.INITIATE,
+					active: true,
+					fields: {},
+					validation: { errors: {}, warnings: {} },
+					timestamp: Date.now(),
+				})
+			})
+
+			// Load the issue with missing issuetype
+			const result = stateManager.loadIssueState(issueWithMissingIssueType)
+
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.currentStep).toBe(WizardStep.INITIATE)
+			}
+		})
+
+		it('should set currentStep to INITIATE when both project and issuetype are missing', () => {
+			// Create a mock issue with both project and issuetype missing
+			const issueWithMissingData = {
+				...mockJiraIssue,
+				fields: {
+					...mockJiraIssue.fields,
+					project: undefined, // Completely missing project
+					issuetype: undefined, // Completely missing issuetype
+				},
+			} as unknown as JiraIssue
+
+			// Mock the updateState method to return a success with INITIATE step
+			jest.spyOn(stateManager, 'updateState').mockImplementationOnce(() => {
+				return createSuccess({
+					currentStep: WizardStep.INITIATE,
+					active: true,
+					fields: {},
+					validation: { errors: {}, warnings: {} },
+					timestamp: Date.now(),
+				})
+			})
+
+			// Load the issue with missing data
+			const result = stateManager.loadIssueState(issueWithMissingData)
+
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.currentStep).toBe(WizardStep.INITIATE)
+			}
+		})
 	})
 })

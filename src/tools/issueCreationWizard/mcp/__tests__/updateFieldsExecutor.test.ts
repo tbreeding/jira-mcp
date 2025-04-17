@@ -45,7 +45,7 @@ describe('updateFieldsWizardToolExecutor', () => {
 
 		// Execute
 		const executor = updateFieldsWizardToolExecutor(mockStateManager, mockJiraConfig)
-		const result = await executor({ arguments: { fields: { summary: 'Test issue' }, validateOnly: false } })
+		const result = await executor({ arguments: { fields: { summary: 'Test issue' } } })
 
 		// Verify
 		expect(result).toBe(mockErrorResult)
@@ -197,7 +197,7 @@ describe('updateFieldsWizardToolExecutor', () => {
 
 		// Execute
 		const executor = updateFieldsWizardToolExecutor(mockStateManager, mockJiraConfig)
-		const result = await executor({ arguments: { fields: mockFields, validateOnly: false } })
+		const result = await executor({ arguments: { fields: mockFields } })
 
 		// Verify
 		expect(result).toBe(mockSuccessResult)
@@ -209,65 +209,9 @@ describe('updateFieldsWizardToolExecutor', () => {
 				projectKey: 'PROJ',
 				issueTypeId: 'issue-123',
 			},
-			{ fields: mockFields, validateOnly: false },
+			{ fields: mockFields },
 		)
 		expect(utils.createSuccessResult).toHaveBeenCalledWith(mockProcessResult)
-	})
-
-	it('should support validation-only mode', async () => {
-		// Setup checkWizardState with valid state
-		;(wizardStateHelpers.checkWizardState as jest.Mock).mockResolvedValue({
-			success: true,
-			state: {
-				projectKey: 'PROJ',
-				issueTypeId: 'issue-123',
-			},
-			projectKey: 'PROJ',
-			issueTypeId: 'issue-123',
-		})
-
-		// Mock fields to validate
-		const mockFields = {
-			summary: 'Test issue',
-		}
-
-		// Mock validation result
-		const mockValidationResult = {
-			success: true,
-			message: 'Validation successful',
-			isValid: true,
-			errors: {},
-		}
-
-		;(fieldProcessor.processFieldsAndState as jest.Mock).mockResolvedValue(mockValidationResult)
-
-		// Mock success result
-		const mockSuccessResult = { content: [{ type: 'text', text: JSON.stringify(mockValidationResult) }] }
-		;(utils.createSuccessResult as jest.Mock).mockReturnValue(mockSuccessResult)
-
-		// Execute with validateOnly = true
-		const executor = updateFieldsWizardToolExecutor(mockStateManager, mockJiraConfig)
-		const result = await executor({ arguments: { fields: mockFields, validateOnly: true } })
-
-		// Verify
-		expect(result).toBe(mockSuccessResult)
-		expect(fieldProcessor.processFieldsAndState).toHaveBeenCalledWith(
-			mockStateManager,
-			mockJiraConfig,
-			{
-				state: {
-					projectKey: 'PROJ',
-					issueTypeId: 'issue-123',
-				},
-				projectKey: 'PROJ',
-				issueTypeId: 'issue-123',
-			},
-			{
-				fields: mockFields,
-				validateOnly: true,
-			},
-		)
-		expect(utils.createSuccessResult).toHaveBeenCalledWith(mockValidationResult)
 	})
 
 	it('should handle field processor errors', async () => {

@@ -13,9 +13,11 @@ import { initializeWizardState } from './operations/initializeWizardState'
 import { updateWizardState } from './operations/updateWizardState'
 import { isStateActive, getNoActiveWizardError, getAlreadyActiveWizardError, createResetResult } from './stateAccessors'
 import { deserializeState, serializeState } from './stateSerialization'
+import { WizardStep } from './types'
 import type { StateManagerCore } from './stateManagerCore'
-import type { WizardState } from './types'
+import type { WizardState, WizardMode } from './types'
 import type { ErrorResult } from '../../errors/types'
+import type { JiraIssue } from '../../jira/types/issue.types'
 
 /**
  * Public API for the Issue Creation Wizard state
@@ -70,8 +72,13 @@ export class StateManager {
 	/**
 	 * Update the wizard state
 	 * @param partialState Partial state to update
+	 * @param options Options for state update (e.g., forceStepTransition)
+	 *   - forceStepTransition: If true, allows jump transitions (used for loading existing issues)
 	 */
-	public updateState(partialState: Partial<WizardState>): { success: true; data: WizardState } | ErrorResult {
+	public updateState(
+		partialState: Partial<WizardState>,
+		options: { forceStepTransition?: boolean } = {},
+	): { success: true; data: WizardState } | ErrorResult {
 		if (!this.isActive()) {
 			return getNoActiveWizardError()
 		}
@@ -85,9 +92,11 @@ export class StateManager {
 				projectKey: currentState.projectKey || '(not set)',
 			})}`,
 		)
-		log(`[DEBUG] StateManager.updateState | Update payload: ${JSON.stringify(partialState)}`)
+		log(
+			`[DEBUG] StateManager.updateState | Update payload: ${JSON.stringify(partialState)}, options: ${JSON.stringify(options)}`,
+		)
 
-		const result = updateWizardState(currentState, partialState)
+		const result = updateWizardState(currentState, partialState, options.forceStepTransition ?? false)
 
 		if (result.success) {
 			// Create a completely fresh copy to ensure no reference sharing
@@ -131,5 +140,45 @@ export class StateManager {
 		}
 
 		return result
+	}
+
+	/**
+	 * Load an issue into the state manager for updating
+	 */
+	public loadIssueState(issueData: JiraIssue): { success: true; data: WizardState } | ErrorResult {
+		// Don't reset existing state if we're already working with this issue
+		// This casting is safe because we check if the state is active first
+		if (this.isActive() && (this.core.getStateValue() as WizardState).issueKey === issueData.key) {
+			return createSuccess(this.core.getStateValue() as WizardState)
+		}
+
+		// Reset any existing state
+		this.resetState()
+
+		// Initialize a new state
+		const initResult = this.initializeState()
+		if (!initResult.success) {
+			return initResult
+		}
+
+		// Determine the correct step
+		const hasProject = Boolean(issueData.fields.project?.key)
+		const hasIssueType = Boolean(issueData.fields.issuetype?.id)
+		let currentStep = WizardStep.INITIATE
+		if (hasProject && hasIssueType) {
+			currentStep = WizardStep.FIELD_COMPLETION
+		}
+
+		// Update with issue data and correct step, forcing step transition
+		return this.updateState(
+			{
+				issueKey: issueData.key,
+				projectKey: issueData.fields.project?.key,
+				issueTypeId: issueData.fields.issuetype?.id,
+				mode: 'updating' as WizardMode,
+				currentStep,
+			},
+			{ forceStepTransition: true },
+		)
 	}
 }

@@ -7,7 +7,7 @@
 import { getAndCategorizeFields } from '../../../jira/api/getAndCategorizeFields'
 import { getProjectByKey } from '../../../jira/api/getProjects'
 import { log } from '../../../utils/logger'
-import { convertToCategorizedFields, createValidationResponse, updateWizardWithFields } from './fieldProcessorUtils'
+import { convertToCategorizedFields, updateWizardWithFields } from './fieldProcessorUtils'
 import { validateFieldsWithMetadata } from './fieldValidationService'
 import { updateStateWithMetadata } from './updateStateWithMetadata'
 import { createProcessErrorResult } from './utils'
@@ -24,7 +24,6 @@ interface WizardStateInfo {
 
 interface FieldsParams {
 	fields: Record<string, unknown>
-	validateOnly?: boolean
 }
 
 export async function processFieldsAndState(
@@ -57,8 +56,6 @@ export async function processFieldsAndState(
 
 		const refreshedState = metadataUpdateResult.data as WizardState
 		const validationResult = validateFieldsWithMetadata(params.fields, categorizedMetadataObject)
-
-		if (params.validateOnly) return createValidationResponse(validationResult)
 
 		if (!validationResult.isValid) {
 			log('ERROR: Field validation failed.')

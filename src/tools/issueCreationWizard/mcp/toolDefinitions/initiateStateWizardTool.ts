@@ -14,7 +14,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js'
  */
 export const initiateStateWizardTool: Tool = {
 	name: 'issueCreation_initiateState',
-	description: `Initialize a new, empty state for the issue creation wizard. Useful for testing state persistence across multiple tool calls.
+	description: `Initialize a new, empty state for the issue creation wizard. Useful for testing state persistence across multiple tool calls. IMPORTANT: Do not jump ahead in the workflow. Always follow the steps in order and wait for the user's response before moving to the next step.
 		
 		1. Initiate State
 		2. Choose a project

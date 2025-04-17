@@ -46,6 +46,9 @@ const defaultConfig: AppConfig = {
 			'issueCreation_setAnalysisComplete',
 			'issueCreation_setUserConfirmation',
 			'issueCreation_analyzeIssue',
+			// Issue Update Wizard tools
+			'issueUpdateWizard_updateIssueFromState',
+			'issueUpdateWizard_loadIssueIntoState',
 		],
 	},
 }

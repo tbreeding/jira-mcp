@@ -135,7 +135,6 @@ describe('processFieldsAndState', () => {
 				summary: 'New Issue',
 				description: 'New Description',
 			},
-			validateOnly: false,
 		}
 
 		const result = await processFieldsAndState(mockStateManager, mockJiraConfig, mockWizardStateInfo, updateFields)
@@ -145,56 +144,6 @@ describe('processFieldsAndState', () => {
 			success: true,
 			message: 'Fields updated successfully',
 			updatedFields: ['summary', 'description'],
-		})
-
-		expect(projectsApi.getProjectByKey).toHaveBeenCalledWith('PROJ', mockJiraConfig)
-		expect(categorizeFields.getAndCategorizeFields).toHaveBeenCalledWith(
-			'PROJ',
-			'project-123',
-			'issue-123',
-			mockJiraConfig,
-		)
-
-		expect(fieldValidationService.validateFieldsWithMetadata).toHaveBeenCalledWith(
-			{ summary: 'New Issue', description: 'New Description' },
-			mockFieldMetadata,
-		)
-	}, 15000)
-
-	it('should return validation result when validateOnly is true', async () => {
-		// Setup validation mock
-		const mockValidationResult = {
-			isValid: true,
-			errors: {},
-		}
-
-		;(fieldValidationService.validateFieldsWithMetadata as jest.Mock).mockReturnValue(mockValidationResult)
-
-		// Mock createValidationResponse
-		;(fieldProcessorUtils.createValidationResponse as jest.Mock).mockReturnValue({
-			success: true,
-			message: 'Fields validated successfully',
-			isValid: true,
-			errors: {},
-		})
-
-		// Execute
-		const updateFields = {
-			fields: {
-				summary: 'New Issue',
-				description: 'New Description',
-			},
-			validateOnly: true,
-		}
-
-		const result = await processFieldsAndState(mockStateManager, mockJiraConfig, mockWizardStateInfo, updateFields)
-
-		// Verify
-		expect(result).toEqual({
-			success: true,
-			message: 'Fields validated successfully',
-			isValid: true,
-			errors: {},
 		})
 
 		expect(projectsApi.getProjectByKey).toHaveBeenCalledWith('PROJ', mockJiraConfig)
@@ -234,7 +183,6 @@ describe('processFieldsAndState', () => {
 				summary: '',
 				description: 'New Description',
 			},
-			validateOnly: false,
 		}
 
 		const result = await processFieldsAndState(mockStateManager, mockJiraConfig, mockWizardStateInfo, updateFields)
@@ -272,7 +220,6 @@ describe('processFieldsAndState', () => {
 				summary: 'New Issue',
 				description: 'New Description',
 			},
-			validateOnly: false,
 		}
 
 		const result = await processFieldsAndState(mockStateManager, mockJiraConfig, mockWizardStateInfo, updateFields)
@@ -311,7 +258,6 @@ describe('processFieldsAndState', () => {
 				summary: 'New Issue',
 				description: 'New Description',
 			},
-			validateOnly: false,
 		}
 
 		const result = await processFieldsAndState(mockStateManager, mockJiraConfig, mockWizardStateInfo, updateFields)
@@ -346,7 +292,6 @@ describe('processFieldsAndState', () => {
 				summary: 'New Issue',
 				description: 'New Description',
 			},
-			validateOnly: false,
 		}
 
 		const result = await processFieldsAndState(mockStateManager, mockJiraConfig, mockWizardStateInfo, updateFields)
@@ -368,7 +313,6 @@ describe('processFieldsAndState', () => {
 				summary: 'New Issue',
 				description: 'New Description',
 			},
-			validateOnly: false,
 		}
 
 		const result = await processFieldsAndState(mockStateManager, mockJiraConfig, mockWizardStateInfo, updateFields)
@@ -396,7 +340,6 @@ describe('processFieldsAndState', () => {
 		// Execute
 		const updateFields = {
 			fields: { summary: 'Test' },
-			validateOnly: false,
 		}
 
 		const result = await processFieldsAndState(mockStateManager, mockJiraConfig, mockWizardStateInfo, updateFields)
@@ -424,7 +367,6 @@ describe('processFieldsAndState', () => {
 		// Execute
 		const updateFields = {
 			fields: { summary: 'Test' },
-			validateOnly: false,
 		}
 
 		const result = await processFieldsAndState(mockStateManager, mockJiraConfig, mockWizardStateInfo, updateFields)

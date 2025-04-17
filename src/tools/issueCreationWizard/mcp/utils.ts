@@ -27,6 +27,7 @@ export function createSuccessResult(data: unknown): ToolResult {
 				text: JSON.stringify(data, null, 2),
 			},
 		],
+		isError: undefined,
 	}
 }
 
