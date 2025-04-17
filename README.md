@@ -1,6 +1,6 @@
 # Jira MCP Server
 
-A collection of tools designed for interacting with Jira via the Model Context Protocol (MCP), providing core Jira functionalities and a guided Issue Creation Wizard.
+A collection of tools designed for interacting with Jira via the Model Context Protocol (MCP), providing core Jira functionalities and a unified, guided Issue Creation and Update Wizard.
 
 ## Installation
 
@@ -62,6 +62,19 @@ These tools provide a step-by-step, guided process for creating new Jira issues.
 - `issueCreation_setAnalysisComplete`: Sets the analysis complete flag.
 - `issueCreation_setUserConfirmation`: Sets the user confirmation flag before creation.
 - `issueCreation_analyzeIssue`: Analyzes the issue details within the wizard context.
+
+### Issue Update Wizard Tools (Unified Update Workflow)
+
+These tools provide a unified, robust mechanism for updating any Jira issue—whether newly created or already existing. All updates now use a single, consistent workflow:
+
+- `issueUpdateWizard_loadIssueIntoState`: Fetch a Jira issue by key and load it into the state manager for unified update workflows.
+- `issueUpdateWizard_updateIssueFromState`: Update any loaded issue using the current state (fields, project, type, etc.).
+
+**Key Principles:**
+- All issue updates (new or existing) follow the same pattern: load the issue into state, modify fields, and update via the API.
+- No code duplication between new and existing issue updates.
+- Minimal, explicit, and robust error handling.
+- 100% unit test coverage for update operations.
 
 ## Development
 
